@@ -86,6 +86,7 @@ let worldObjects = [];
 let spawnTimer = 0;
 let animationId = null;
 let audioContext = null;
+let lastFrameTime = 0;
 
 let swipeState = {
     tracking: false,
@@ -527,6 +528,7 @@ function startGame() {
     state.players = createPlayers();
 
     spawnTimer = 0;
+    lastFrameTime = performance.now();
 
     elStart.classList.add("hidden");
     elGameOver.classList.add("hidden");
@@ -573,7 +575,7 @@ function startGame() {
     playTone(520, 0.08, "square", 0.05);
     playTone(700, 0.1, "square", 0.04);
 
-    animate();
+    animate(lastFrameTime);
 }
 
 function movePlayerLane(player, direction) {
@@ -616,21 +618,22 @@ function handleKeyboardInput(e) {
     });
 }
 
-function updatePlayers() {
+function updatePlayers(dtScale) {
     state.players.forEach((player, index) => {
         if (!player.alive) return;
 
-        player.score += state.speed;
+        player.score += state.speed * dtScale;
+
         const mesh = playerMeshes[index];
         const targetX = player.roadX + player.lane * CONFIG.laneWidth;
         const prevX = player.currentLaneX;
 
-        player.currentLaneX += (targetX - player.currentLaneX) * 0.18;
+        player.currentLaneX += (targetX - player.currentLaneX) * Math.min(1, 0.18 * dtScale);
         mesh.position.x = player.currentLaneX;
 
         if (player.isJumping) {
-            player.playerY += player.jumpVel;
-            player.jumpVel -= CONFIG.gravity;
+            player.playerY += player.jumpVel * dtScale;
+            player.jumpVel -= CONFIG.gravity * dtScale;
 
             if (player.playerY <= 0) {
                 player.playerY = 0;
@@ -650,8 +653,8 @@ function updatePlayers() {
     elScoreP2.textContent = Math.floor(state.players[1]?.score || 0);
 }
 
-function updateWorld() {
-    spawnTimer += state.speed;
+function updateWorld(dtScale) {
+    spawnTimer += state.speed * dtScale;
 
     if (spawnTimer >= state.spawnGap) {
         spawnObstacleRow();
@@ -660,7 +663,7 @@ function updateWorld() {
 
     for (let i = worldObjects.length - 1; i >= 0; i--) {
         const obj = worldObjects[i];
-        obj.mesh.position.z += state.speed * 2;
+        obj.mesh.position.z += state.speed * 2 * dtScale;
 
         if (obj.type === "obstacle") {
             const player = state.players[obj.owner];
@@ -719,15 +722,23 @@ function finishGame() {
     }
 }
 
-function animate() {
+function animate(now = performance.now()) {
     if (!state.isPlaying) return;
 
     animationId = requestAnimationFrame(animate);
 
-    state.speed = Math.min(state.speed + state.speedInc, CONFIG.maxSpeed);
+    const deltaMs = Math.min(now - lastFrameTime, 33);
+    lastFrameTime = now;
 
-    updatePlayers();
-    updateWorld();
+    const dtScale = deltaMs / (1000 / 60);
+
+    state.speed = Math.min(
+        state.speed + state.speedInc * dtScale,
+        CONFIG.maxSpeed
+    );
+
+    updatePlayers(dtScale);
+    updateWorld(dtScale);
 
     const allDead = state.players.every((player) => !player.alive);
     if (allDead) {
