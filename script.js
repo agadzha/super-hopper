@@ -6,13 +6,15 @@ const CONFIG = {
     gravity: 0.015,
     jumpPower: 0.35,
     spawnDistance: -60,
-    removeDistance: 12
+    removeDistance: 12,
+    maxSpeed: 0.42,
+    minObstaclesAhead: 8
 };
 
 const DIFFICULTIES = {
-    easy: { speed: 0.16, speedInc: 0.00007, spawnGap: 3.6 },
-    normal: { speed: 0.2, speedInc: 0.00012, spawnGap: 3.0 },
-    hard: { speed: 0.25, speedInc: 0.00018, spawnGap: 2.4 }
+    easy: { speed: 0.14, speedInc: 0.00003, spawnGap: 3.4 },
+    normal: { speed: 0.18, speedInc: 0.00005, spawnGap: 2.9 },
+    hard: { speed: 0.22, speedInc: 0.00007, spawnGap: 2.4 }
 };
 
 const THEMES = [
@@ -413,9 +415,16 @@ function spawnObstacleRow() {
         worldObjects.push({
             mesh: obstacle,
             type: "obstacle",
-            owner: index
+            owner: index,
+            hit: false
         });
     });
+}
+
+function countObstaclesAhead() {
+    return worldObjects.filter(
+        (obj) => obj.type === "obstacle" && obj.mesh.position.z < 0
+    ).length;
 }
 
 function startGame() {
@@ -471,6 +480,10 @@ function startGame() {
         playerMeshes.push(mesh);
     });
 
+    for (let i = 0; i < 4; i++) {
+        spawnObstacleRow();
+    }
+
     playTone(520, 0.08, "square", 0.05);
     playTone(700, 0.1, "square", 0.04);
 
@@ -484,8 +497,10 @@ function triggerPlayerAction(playerIndex, action) {
 
     if (action === "left" && player.lane > -1) {
         player.lane--;
+        playTone(420, 0.03, "square", 0.02);
     } else if (action === "right" && player.lane < 1) {
         player.lane++;
+        playTone(520, 0.03, "square", 0.02);
     } else if (action === "jump" && !player.isJumping) {
         player.isJumping = true;
         player.jumpVel = CONFIG.jumpPower;
@@ -545,7 +560,7 @@ function updatePlayers() {
 function updateWorld() {
     spawnTimer += state.speed;
 
-    if (spawnTimer > state.spawnGap) {
+    if (spawnTimer >= state.spawnGap) {
         spawnObstacleRow();
         spawnTimer = 0;
     }
@@ -561,6 +576,7 @@ function updateWorld() {
             if (
                 player &&
                 player.alive &&
+                !obj.hit &&
                 obj.mesh.position.z > -0.7 &&
                 obj.mesh.position.z < 0.7
             ) {
@@ -568,6 +584,7 @@ function updateWorld() {
                 const dy = Math.abs(mesh.position.y - obj.mesh.position.y);
 
                 if (dx < 0.65 && dy < 0.65) {
+                    obj.hit = true;
                     player.alive = false;
                     mesh.visible = false;
                     playTone(140, 0.18, "sawtooth", 0.06);
@@ -579,6 +596,10 @@ function updateWorld() {
             scene.remove(obj.mesh);
             worldObjects.splice(i, 1);
         }
+    }
+
+    if (countObstaclesAhead() < CONFIG.minObstaclesAhead) {
+        spawnObstacleRow();
     }
 }
 
@@ -606,7 +627,7 @@ function animate() {
 
     animationId = requestAnimationFrame(animate);
 
-    state.speed += state.speedInc;
+    state.speed = Math.min(state.speed + state.speedInc, CONFIG.maxSpeed);
 
     updatePlayers();
     updateWorld();
