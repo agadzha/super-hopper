@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SUPER HOPPER DUO</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <div id="ui-layer">
+        <div id="score-display" class="hidden">
+            <div class="score-card player1">
+                <span class="score-label">PLAYER 1</span>
+                <span id="score-p1" class="score-value">0</span>
+            </div>
+
+            <div id="score-card-p2" class="score-card player2">
+                <span class="score-label">PLAYER 2</span>
+                <span id="score-p2" class="score-value">0</span>
+            </div>
+        </div>
+
+        <div id="instructions">
+            <div class="instruction-block">
+                <div class="instruction-title">P1</div>
+                <div><span class="key">A</span> <span class="key">D</span></div>
+                <div><span class="key">W</span></div>
+            </div>
+
+            <div id="instruction-p2" class="instruction-block">
+                <div class="instruction-title">P2</div>
+                <div><span class="key">←</span> <span class="key">→</span></div>
+                <div><span class="key">↑</span></div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="center-screen">
+            <h1 class="title">SUPER HOPPER</h1>
+            <p class="subtitle">PICK MODE AND START</p>
+
+            <div class="menu-group">
+                <div class="menu-label">MODE</div>
+                <div class="button-row">
+                    <button class="option-btn mode-btn active" data-mode="1p">1 PLAYER</button>
+                    <button class="option-btn mode-btn" data-mode="2p">2 PLAYERS</button>
+                </div>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">DIFFICULTY</div>
+                <div class="button-row">
+                    <button class="option-btn difficulty-btn" data-difficulty="easy">EASY</button>
+                    <button class="option-btn difficulty-btn active" data-difficulty="normal">NORMAL</button>
+                    <button class="option-btn difficulty-btn" data-difficulty="hard">HARD</button>
+                </div>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-label">SOUND</div>
+                <div class="button-row">
+                    <button id="sound-toggle" class="option-btn active">ON</button>
+                </div>
+            </div>
+
+            <button id="start-btn" class="main-btn">PRESS START</button>
+        </div>
+
+        <div id="game-over-screen" class="center-screen hidden">
+            <h1 class="title">GAME OVER</h1>
+            <p class="subtitle"><span id="final-score">0</span></p>
+            <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+        </div>
+
+        <div id="mobile-controls" class="hidden">
+            <div class="mobile-pad left-pad">
+                <div class="mobile-label">P1</div>
+                <div class="mobile-row">
+                    <button class="mobile-btn" data-player="0" data-action="left">LEFT</button>
+                    <button class="mobile-btn" data-player="0" data-action="right">RIGHT</button>
+                </div>
+                <button class="mobile-btn jump-btn" data-player="0" data-action="jump">JUMP</button>
+            </div>
+
+            <div id="mobile-pad-p2" class="mobile-pad right-pad">
+                <div class="mobile-label">P2</div>
+                <div class="mobile-row">
+                    <button class="mobile-btn" data-player="1" data-action="left">LEFT</button>
+                    <button class="mobile-btn" data-player="1" data-action="right">RIGHT</button>
+                </div>
+                <button class="mobile-btn jump-btn" data-player="1" data-action="jump">JUMP</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
