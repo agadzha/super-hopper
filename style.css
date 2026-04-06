@@ -68,6 +68,7 @@ button:active {
 .main-btn {
     font-size: 2rem;
     padding: 0.9rem 1.9rem;
+    margin-top: 1rem;
 }
 
 .option-btn.active {
@@ -250,7 +251,7 @@ button:active {
     #instructions {
         top: 12px;
         right: 12px;
-        opacity: 0.9;
+        opacity: 0.92;
     }
 
     .instruction-block {
@@ -275,5 +276,14 @@ button:active {
 
     .main-btn {
         width: 100%;
+    }
+
+    .button-row {
+        gap: 0.4rem;
+    }
+
+    .option-btn {
+        font-size: 1.25rem;
+        padding: 0.7rem 0.9rem;
     }
 }
