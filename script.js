@@ -1,5 +1,13 @@
 import * as THREE from "three";
 
+// 🔥 Analytics helper
+function track(event, params = {}) {
+  if (typeof gtag === 'function') {
+    gtag('event', event, params);
+    console.log('📊 EVENT:', event, params); // чтобы видеть в консоли
+  }
+}
+
 const CONFIG = {
     laneWidth: 1.8,
     roadOffsetX: 3.6,
@@ -114,8 +122,19 @@ function bindUI() {
     window.addEventListener("resize", onWindowResize);
     document.addEventListener("keydown", handleKeyboardInput);
 
-    document.getElementById("start-btn").addEventListener("click", startGame);
-    document.getElementById("restart-btn").addEventListener("click", startGame);
+   document.getElementById("start-btn").addEventListener("click", () => {
+  track('game_start', {
+    mode: state.mode,
+    difficulty: state.difficulty
+  });
+
+  startGame();
+});
+ document.getElementById("restart-btn").addEventListener("click", () => {
+  track('game_restart');
+
+  startGame();
+});
 
     document.querySelectorAll(".mode-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -604,6 +623,9 @@ function updateWorld() {
 }
 
 function finishGame() {
+    track('game_over', {
+  score: Math.floor(state.players[0]?.score || 0)
+});
     state.isPlaying = false;
     elGameOver.classList.remove("hidden");
     elScoreDisplay.classList.add("hidden");
