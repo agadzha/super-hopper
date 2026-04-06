@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -33,6 +33,13 @@ gtag('config', 'G-575H9T1521');
             </div>
         </div>
 
+        <div id="wallet-display">
+            <span class="wallet-label">COINS</span>
+            <span id="wallet-value">0</span>
+        </div>
+
+        <button id="open-shop-btn" class="shop-open-btn">SHOP</button>
+
         <div id="instructions">
             <div class="instruction-block">
                 <div class="instruction-title">P1</div>
@@ -49,7 +56,7 @@ gtag('config', 'G-575H9T1521');
 
         <div id="start-screen" class="center-screen">
             <h1 class="title">SUPER HOPPER</h1>
-            <p class="subtitle">ENDLESS RUNNER MODE</p>
+            <p class="subtitle">COINS • SHOP • ENDLESS RUN</p>
 
             <div class="menu-group">
                 <div class="menu-label">MODE</div>
@@ -75,33 +82,46 @@ gtag('config', 'G-575H9T1521');
                 </div>
             </div>
 
-            <button id="start-btn" class="main-btn">PRESS START</button>
+            <div class="button-row menu-actions">
+                <button id="open-shop-from-menu" class="main-btn">SHOP</button>
+                <button id="start-btn" class="main-btn">PRESS START</button>
+            </div>
         </div>
 
         <div id="game-over-screen" class="center-screen hidden">
             <h1 class="title">GAME OVER</h1>
             <p class="subtitle"><span id="final-score">0</span></p>
-            <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+            <div class="button-row menu-actions">
+                <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+            </div>
         </div>
 
-        <div id="mobile-controls" class="hidden">
-            <div class="mobile-pad left-pad">
-                <div class="mobile-label">P1</div>
-                <div class="mobile-row">
-                    <button class="mobile-btn" data-player="0" data-action="left">LEFT</button>
-                    <button class="mobile-btn" data-player="0" data-action="right">RIGHT</button>
+        <div id="shop-panel" class="hidden">
+            <div class="shop-card">
+                <div class="shop-header">
+                    <span>SHOP</span>
+                    <button id="close-shop-btn" class="shop-close-btn">X</button>
                 </div>
-                <button class="mobile-btn jump-btn" data-player="0" data-action="jump">JUMP</button>
-            </div>
 
-            <div id="mobile-pad-p2" class="mobile-pad right-pad">
-                <div class="mobile-label">P2</div>
-                <div class="mobile-row">
-                    <button class="mobile-btn" data-player="1" data-action="left">LEFT</button>
-                    <button class="mobile-btn" data-player="1" data-action="right">RIGHT</button>
+                <div class="shop-section">
+                    <div class="shop-title">PLAYER 1 SKINS</div>
+                    <div id="skin-shop-p1" class="shop-grid"></div>
                 </div>
-                <button class="mobile-btn jump-btn" data-player="1" data-action="jump">JUMP</button>
+
+                <div class="shop-section">
+                    <div class="shop-title">PLAYER 2 SKINS</div>
+                    <div id="skin-shop-p2" class="shop-grid"></div>
+                </div>
+
+                <div class="shop-section">
+                    <div class="shop-title">EFFECTS</div>
+                    <div id="effect-shop" class="shop-grid"></div>
+                </div>
             </div>
+        </div>
+
+        <div id="mobile-swipe-hint" class="hidden">
+            <div class="swipe-pill">SWIPE LEFT / RIGHT / UP</div>
         </div>
     </div>
 
