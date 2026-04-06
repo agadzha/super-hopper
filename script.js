@@ -2,9 +2,9 @@ import * as THREE from "three";
 
 // 🔥 Analytics helper
 function track(event, params = {}) {
-  if (typeof gtag === 'function') {
-    gtag('event', event, params);
-    console.log('📊 EVENT:', event, params); // чтобы видеть в консоли
+  if (typeof gtag === "function") {
+    gtag("event", event, params);
+    console.log("📊 EVENT:", event, params);
   }
 }
 
@@ -16,7 +16,8 @@ const CONFIG = {
     spawnDistance: -60,
     removeDistance: 12,
     maxSpeed: 0.42,
-    minObstaclesAhead: 8
+    minObstaclesAhead: 8,
+    swipeThreshold: 28
 };
 
 const DIFFICULTIES = {
@@ -86,6 +87,13 @@ let spawnTimer = 0;
 let animationId = null;
 let audioContext = null;
 
+let swipeState = {
+    tracking: false,
+    startX: 0,
+    startY: 0,
+    playerIndex: 0
+};
+
 function init() {
     scene = new THREE.Scene();
 
@@ -122,19 +130,18 @@ function bindUI() {
     window.addEventListener("resize", onWindowResize);
     document.addEventListener("keydown", handleKeyboardInput);
 
-   document.getElementById("start-btn").addEventListener("click", () => {
-  track('game_start', {
-    mode: state.mode,
-    difficulty: state.difficulty
-  });
+    document.getElementById("start-btn").addEventListener("click", () => {
+        track("game_start", {
+            mode: state.mode,
+            difficulty: state.difficulty
+        });
+        startGame();
+    });
 
-  startGame();
-});
- document.getElementById("restart-btn").addEventListener("click", () => {
-  track('game_restart');
-
-  startGame();
-});
+    document.getElementById("restart-btn").addEventListener("click", () => {
+        track("game_restart");
+        startGame();
+    });
 
     document.querySelectorAll(".mode-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -158,21 +165,74 @@ function bindUI() {
         playTone(700, 0.05, "square", 0.03);
     });
 
-    document.querySelectorAll(".mobile-btn").forEach((btn) => {
-        const fire = (event) => {
-            event.preventDefault();
-            const playerIndex = Number(btn.dataset.player);
-            const action = btn.dataset.action;
-            triggerPlayerAction(playerIndex, action);
-        };
-
-        btn.addEventListener("touchstart", fire, { passive: false });
-        btn.addEventListener("pointerdown", fire);
-        btn.addEventListener("click", fire);
-    });
+    bindSwipeControls();
 
     updateMenuButtons();
     updateModeUI();
+}
+
+function bindSwipeControls() {
+    window.addEventListener(
+        "touchstart",
+        (event) => {
+            if (!isMobileLike()) return;
+            if (!state.isPlaying) return;
+            if (!event.touches || !event.touches.length) return;
+
+            const touch = event.touches[0];
+            swipeState.tracking = true;
+            swipeState.startX = touch.clientX;
+            swipeState.startY = touch.clientY;
+            swipeState.playerIndex =
+                state.mode === "2p" && swipeState.startX >= window.innerWidth / 2 ? 1 : 0;
+        },
+        { passive: true }
+    );
+
+    window.addEventListener(
+        "touchend",
+        (event) => {
+            if (!isMobileLike()) return;
+            if (!state.isPlaying) return;
+            if (!swipeState.tracking) return;
+            if (!event.changedTouches || !event.changedTouches.length) return;
+
+            const touch = event.changedTouches[0];
+            const dx = touch.clientX - swipeState.startX;
+            const dy = touch.clientY - swipeState.startY;
+
+            swipeState.tracking = false;
+
+            if (
+                Math.abs(dx) < CONFIG.swipeThreshold &&
+                Math.abs(dy) < CONFIG.swipeThreshold
+            ) {
+                return;
+            }
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                triggerPlayerAction(
+                    swipeState.playerIndex,
+                    dx > 0 ? "right" : "left"
+                );
+            } else if (dy < -CONFIG.swipeThreshold) {
+                triggerPlayerAction(swipeState.playerIndex, "jump");
+            }
+        },
+        { passive: true }
+    );
+
+    window.addEventListener(
+        "touchcancel",
+        () => {
+            swipeState.tracking = false;
+        },
+        { passive: true }
+    );
+}
+
+function isMobileLike() {
+    return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
 }
 
 function updateMenuButtons() {
@@ -193,7 +253,10 @@ function updateModeUI() {
     const twoPlayer = state.mode === "2p";
     elScoreCardP2.classList.toggle("hidden", !twoPlayer);
     elInstructionsP2.classList.toggle("hidden", !twoPlayer);
-    elMobilePadP2.classList.toggle("hidden", !twoPlayer);
+
+    if (elMobilePadP2) {
+        elMobilePadP2.classList.toggle("hidden", !twoPlayer);
+    }
 }
 
 function onWindowResize() {
@@ -468,7 +531,11 @@ function startGame() {
     elStart.classList.add("hidden");
     elGameOver.classList.add("hidden");
     elScoreDisplay.classList.remove("hidden");
-    elMobileControls.classList.remove("hidden");
+
+    if (elMobileControls) {
+        elMobileControls.classList.toggle("hidden", true);
+        elMobileControls.style.display = "none";
+    }
 
     elScoreP1.textContent = "0";
     elScoreP2.textContent = "0";
@@ -509,16 +576,23 @@ function startGame() {
     animate();
 }
 
+function movePlayerLane(player, direction) {
+    const nextLane = Math.max(-1, Math.min(1, player.lane + direction));
+    if (nextLane !== player.lane) {
+        player.lane = nextLane;
+    }
+}
+
 function triggerPlayerAction(playerIndex, action) {
     if (!state.isPlaying) return;
     const player = state.players[playerIndex];
     if (!player || !player.alive) return;
 
-    if (action === "left" && player.lane > -1) {
-        player.lane--;
+    if (action === "left") {
+        movePlayerLane(player, -1);
         playTone(420, 0.03, "square", 0.02);
-    } else if (action === "right" && player.lane < 1) {
-        player.lane++;
+    } else if (action === "right") {
+        movePlayerLane(player, 1);
         playTone(520, 0.03, "square", 0.02);
     } else if (action === "jump" && !player.isJumping) {
         player.isJumping = true;
@@ -623,9 +697,10 @@ function updateWorld() {
 }
 
 function finishGame() {
-    track('game_over', {
-  score: Math.floor(state.players[0]?.score || 0)
-});
+    track("game_over", {
+        score: Math.floor(state.players[0]?.score || 0)
+    });
+
     state.isPlaying = false;
     elGameOver.classList.remove("hidden");
     elScoreDisplay.classList.add("hidden");
