@@ -10,7 +10,6 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-575H9T1521');
 </script>
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SUPER HOPPER DUO</title>
@@ -38,6 +37,11 @@ gtag('config', 'G-575H9T1521');
             <span id="wallet-value">0</span>
         </div>
 
+        <div id="level-display" class="hidden">
+            <span class="wallet-label">MODE</span>
+            <span id="level-value">1</span>
+        </div>
+
         <button id="open-shop-btn" class="shop-open-btn">SHOP</button>
 
         <div id="instructions">
@@ -56,7 +60,7 @@ gtag('config', 'G-575H9T1521');
 
         <div id="start-screen" class="center-screen">
             <h1 class="title">SUPER HOPPER</h1>
-            <p class="subtitle">COINS • SHOP • ENDLESS RUN</p>
+            <p class="subtitle">LEVELS OR ENDLESS</p>
 
             <div class="menu-group">
                 <div class="menu-label">MODE</div>
@@ -67,10 +71,23 @@ gtag('config', 'G-575H9T1521');
             </div>
 
             <div class="menu-group">
+                <div class="menu-label">GAME TYPE</div>
+                <div class="button-row">
+                    <button class="option-btn game-type-btn active" data-game-type="levels">LEVELS</button>
+                    <button class="option-btn game-type-btn" data-game-type="endless">ENDLESS</button>
+                </div>
+            </div>
+
+            <div id="levels-group" class="menu-group">
+                <div class="menu-label">LEVELS</div>
+                <div id="level-select" class="level-grid"></div>
+            </div>
+
+            <div id="difficulty-group" class="menu-group hidden">
                 <div class="menu-label">DIFFICULTY</div>
                 <div class="button-row">
-                    <button class="option-btn difficulty-btn" data-difficulty="easy">EASY</button>
-                    <button class="option-btn difficulty-btn active" data-difficulty="normal">NORMAL</button>
+                    <button class="option-btn difficulty-btn active" data-difficulty="easy">EASY</button>
+                    <button class="option-btn difficulty-btn" data-difficulty="normal">NORMAL</button>
                     <button class="option-btn difficulty-btn" data-difficulty="hard">HARD</button>
                 </div>
             </div>
@@ -93,6 +110,7 @@ gtag('config', 'G-575H9T1521');
             <p class="subtitle"><span id="final-score">0</span></p>
             <div class="button-row menu-actions">
                 <button id="restart-btn" class="main-btn">TRY AGAIN</button>
+                <button id="menu-btn" class="main-btn">MENU</button>
             </div>
         </div>
 

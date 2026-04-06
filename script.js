@@ -25,65 +25,73 @@ const CONFIG = {
     magnetPull: 0.16
 };
 
-const DIFFICULTIES = {
-    easy: { speed: 0.14, speedInc: 0.00003, spawnGap: 3.4 },
-    normal: { speed: 0.18, speedInc: 0.00005, spawnGap: 2.9 },
-    hard: { speed: 0.22, speedInc: 0.00007, spawnGap: 2.4 }
-};
-
-const THEMES = [
-    {
-        sky: 0xffb2a6,
-        ground: 0xa94f63,
-        obstacle: 0x473b4f,
-        decor: 0xb89d32,
-        divider: 0xe6e6e6,
-        roadEdge: 0x2a1f26
-    },
-    {
-        sky: 0xcde7ff,
-        ground: 0x5f6caf,
-        obstacle: 0x2d3142,
-        decor: 0x8fbf6a,
-        divider: 0xf5f5f5,
-        roadEdge: 0x20242f
-    },
-    {
-        sky: 0xf6c28b,
-        ground: 0xb85c38,
-        obstacle: 0x324a5f,
-        decor: 0x9c9f4f,
-        divider: 0xffffff,
-        roadEdge: 0x2f2220
-    }
+const LEVELS = [
+    null,
+    { id: 1, name: "Candy", target: 500, speed: 0.14, speedInc: 0.00003, spawnGap: 3.6, theme: { sky: 0xffd0c4, ground: 0xa95c54, obstacle: 0x4a3a42, decor: 0x9ca35a, divider: 0xf2f2f2, roadEdge: 0x2d2120 } },
+    { id: 2, name: "Mint", target: 700, speed: 0.15, speedInc: 0.000035, spawnGap: 3.4, theme: { sky: 0xd7fff1, ground: 0x5aa58c, obstacle: 0x2d4b44, decor: 0x9ad18b, divider: 0xffffff, roadEdge: 0x22312d } },
+    { id: 3, name: "Dust", target: 900, speed: 0.16, speedInc: 0.00004, spawnGap: 3.2, theme: { sky: 0xf6c28b, ground: 0xb85c38, obstacle: 0x324a5f, decor: 0x9c9f4f, divider: 0xffffff, roadEdge: 0x2f2220 } },
+    { id: 4, name: "Blue", target: 1100, speed: 0.17, speedInc: 0.000045, spawnGap: 3.05, theme: { sky: 0xcde7ff, ground: 0x5f6caf, obstacle: 0x2d3142, decor: 0x8fbf6a, divider: 0xf5f5f5, roadEdge: 0x20242f } },
+    { id: 5, name: "Sun", target: 1300, speed: 0.18, speedInc: 0.00005, spawnGap: 2.95, theme: { sky: 0xffe29a, ground: 0xd47a3f, obstacle: 0x5c3b2e, decor: 0xb7b24d, divider: 0xffffff, roadEdge: 0x3b2418 } },
+    { id: 6, name: "Pink", target: 1500, speed: 0.19, speedInc: 0.000055, spawnGap: 2.85, theme: { sky: 0xf7b2d9, ground: 0x9f4d73, obstacle: 0x3b2635, decor: 0xc2a85a, divider: 0xf2f2f2, roadEdge: 0x28161f } },
+    { id: 7, name: "Forest", target: 1700, speed: 0.2, speedInc: 0.00006, spawnGap: 2.75, theme: { sky: 0x9be564, ground: 0x3c7a57, obstacle: 0x22333b, decor: 0x7bd389, divider: 0xffffff, roadEdge: 0x172026 } },
+    { id: 8, name: "Storm", target: 1900, speed: 0.21, speedInc: 0.000065, spawnGap: 2.65, theme: { sky: 0x8d99ae, ground: 0x6d597a, obstacle: 0x2b2d42, decor: 0xb56576, divider: 0xf1f1f1, roadEdge: 0x1b1c28 } },
+    { id: 9, name: "Lava", target: 2100, speed: 0.22, speedInc: 0.00007, spawnGap: 2.55, theme: { sky: 0xff9671, ground: 0xc44536, obstacle: 0x2d1e2f, decor: 0xf4a259, divider: 0xffffff, roadEdge: 0x251515 } },
+    { id: 10, name: "Midnight", target: 2300, speed: 0.23, speedInc: 0.00008, spawnGap: 2.45, theme: { sky: 0x0f1020, ground: 0x2d3250, obstacle: 0xffc857, decor: 0x4f5d75, divider: 0xffffff, roadEdge: 0x0a0c14 } }
 ];
+
+const ENDLESS_DIFFICULTIES = {
+    easy: {
+        name: "Easy",
+        speed: 0.14,
+        speedInc: 0.00003,
+        spawnGap: 3.5,
+        theme: LEVELS[1].theme
+    },
+    normal: {
+        name: "Normal",
+        speed: 0.18,
+        speedInc: 0.00005,
+        spawnGap: 2.9,
+        theme: LEVELS[4].theme
+    },
+    hard: {
+        name: "Hard",
+        speed: 0.22,
+        speedInc: 0.00007,
+        spawnGap: 2.4,
+        theme: LEVELS[9].theme
+    }
+};
 
 const SHOP_DATA = {
     skins: [
         { id: "blue", name: "Blue", price: 0, color: 0x54b7ff },
-        { id: "orange", name: "Orange", price: 50, color: 0xff9a62 },
-        { id: "lime", name: "Lime", price: 100, color: 0x8cff66 },
-        { id: "pink", name: "Pink", price: 125, color: 0xff66cc },
+        { id: "orange", name: "Orange", price: 30, color: 0xff9a62 },
+        { id: "lime", name: "Lime", price: 60, color: 0x8cff66 },
+        { id: "pink", name: "Pink", price: 90, color: 0xff66cc },
         { id: "gold", name: "Gold", price: 150, color: 0xffd166 }
     ],
     effects: [
         { id: "none", name: "None", price: 0, type: "trail", trail: null },
-        { id: "spark", name: "Spark", price: 100, type: "trail", trail: 0xffd166 },
-        { id: "aqua", name: "Aqua", price: 200, type: "trail", trail: 0x4ecdc4 },
-        { id: "fire", name: "Fire", price: 300, type: "trail", trail: 0xff6b6b },
-        { id: "magnet", name: "Magnet", price: 500, type: "magnet", trail: 0x9b5de5 }
+        { id: "spark", name: "Spark", price: 50, type: "trail", trail: 0xffd166 },
+        { id: "aqua", name: "Aqua", price: 80, type: "trail", trail: 0x4ecdc4 },
+        { id: "fire", name: "Fire", price: 120, type: "trail", trail: 0xff6b6b },
+        { id: "magnet", name: "Magnet", price: 180, type: "magnet", trail: 0x9b5de5 }
     ]
 };
 
 let state = {
     isPlaying: false,
     mode: "1p",
-    difficulty: "normal",
+    gameType: "levels",
+    difficulty: "easy",
     soundEnabled: true,
-    speed: DIFFICULTIES.normal.speed,
-    speedInc: DIFFICULTIES.normal.speedInc,
-    spawnGap: DIFFICULTIES.normal.spawnGap,
-    theme: null,
+    currentLevel: 1,
+    unlockedLevel: 1,
+    speed: LEVELS[1].speed,
+    speedInc: LEVELS[1].speedInc,
+    spawnGap: LEVELS[1].spawnGap,
+    theme: LEVELS[1].theme,
     players: [],
     coins: 0,
     collectedThisRun: 0,
@@ -112,6 +120,12 @@ const elSkinShopP1 = document.getElementById("skin-shop-p1");
 const elSkinShopP2 = document.getElementById("skin-shop-p2");
 const elEffectShop = document.getElementById("effect-shop");
 const elSwipeHint = document.getElementById("mobile-swipe-hint");
+const elLevelDisplay = document.getElementById("level-display");
+const elLevelValue = document.getElementById("level-value");
+const elLevelSelect = document.getElementById("level-select");
+const elMenuBtn = document.getElementById("menu-btn");
+const elLevelsGroup = document.getElementById("levels-group");
+const elDifficultyGroup = document.getElementById("difficulty-group");
 
 let scene;
 let camera;
@@ -134,12 +148,7 @@ let swipeState = {
 function init() {
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(
-        60,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        100
-    );
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 11, 10);
     camera.lookAt(0, 0, -12);
 
@@ -162,6 +171,8 @@ function init() {
     bindUI();
     loadProgress();
     renderShop();
+    renderLevelSelect();
+    updateHUD();
     renderer.render(scene, camera);
 }
 
@@ -172,15 +183,15 @@ function bindUI() {
     document.getElementById("start-btn").addEventListener("click", () => {
         track("game_start", {
             mode: state.mode,
+            game_type: state.gameType,
+            level: state.currentLevel,
             difficulty: state.difficulty
         });
         startGame();
     });
 
-    document.getElementById("restart-btn").addEventListener("click", () => {
-        track("game_restart");
-        startGame();
-    });
+    document.getElementById("restart-btn").addEventListener("click", startGame);
+    elMenuBtn.addEventListener("click", returnToMenu);
 
     document.querySelectorAll(".mode-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -189,10 +200,19 @@ function bindUI() {
         });
     });
 
+    document.querySelectorAll(".game-type-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            state.gameType = btn.dataset.gameType;
+            updateMenuButtons();
+            updateHUD();
+        });
+    });
+
     document.querySelectorAll(".difficulty-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
             state.difficulty = btn.dataset.difficulty;
             updateMenuButtons();
+            updateHUD();
         });
     });
 
@@ -214,63 +234,35 @@ function bindUI() {
 }
 
 function bindSwipeControls() {
-    window.addEventListener(
-        "touchstart",
-        (event) => {
-            if (!isMobileLike()) return;
-            if (!state.isPlaying) return;
-            if (!event.touches.length) return;
+    window.addEventListener("touchstart", (event) => {
+        if (!isMobileLike() || !state.isPlaying || !event.touches.length) return;
+        const touch = event.touches[0];
+        swipeState.tracking = true;
+        swipeState.startX = touch.clientX;
+        swipeState.startY = touch.clientY;
+        swipeState.playerIndex = state.mode === "2p" && touch.clientX >= window.innerWidth / 2 ? 1 : 0;
+    }, { passive: true });
 
-            const touch = event.touches[0];
-            swipeState.tracking = true;
-            swipeState.startX = touch.clientX;
-            swipeState.startY = touch.clientY;
-            swipeState.playerIndex =
-                state.mode === "2p" && touch.clientX >= window.innerWidth / 2 ? 1 : 0;
-        },
-        { passive: true }
-    );
+    window.addEventListener("touchend", (event) => {
+        if (!isMobileLike() || !state.isPlaying || !swipeState.tracking || !event.changedTouches.length) return;
 
-    window.addEventListener(
-        "touchend",
-        (event) => {
-            if (!isMobileLike()) return;
-            if (!state.isPlaying) return;
-            if (!swipeState.tracking) return;
-            if (!event.changedTouches.length) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - swipeState.startX;
+        const dy = touch.clientY - swipeState.startY;
+        swipeState.tracking = false;
 
-            const touch = event.changedTouches[0];
-            const dx = touch.clientX - swipeState.startX;
-            const dy = touch.clientY - swipeState.startY;
+        if (Math.abs(dx) < CONFIG.swipeThreshold && Math.abs(dy) < CONFIG.swipeThreshold) return;
 
-            swipeState.tracking = false;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            triggerPlayerAction(swipeState.playerIndex, dx > 0 ? "right" : "left");
+        } else if (dy < -CONFIG.swipeThreshold) {
+            triggerPlayerAction(swipeState.playerIndex, "jump");
+        }
+    }, { passive: true });
 
-            if (
-                Math.abs(dx) < CONFIG.swipeThreshold &&
-                Math.abs(dy) < CONFIG.swipeThreshold
-            ) {
-                return;
-            }
-
-            if (Math.abs(dx) > Math.abs(dy)) {
-                triggerPlayerAction(
-                    swipeState.playerIndex,
-                    dx > 0 ? "right" : "left"
-                );
-            } else if (dy < -CONFIG.swipeThreshold) {
-                triggerPlayerAction(swipeState.playerIndex, "jump");
-            }
-        },
-        { passive: true }
-    );
-
-    window.addEventListener(
-        "touchcancel",
-        () => {
-            swipeState.tracking = false;
-        },
-        { passive: true }
-    );
+    window.addEventListener("touchcancel", () => {
+        swipeState.tracking = false;
+    }, { passive: true });
 }
 
 function isMobileLike() {
@@ -285,25 +277,59 @@ function loadProgress() {
     state.selectedSkinP1 = saved.selectedSkinP1 || "blue";
     state.selectedSkinP2 = saved.selectedSkinP2 || "orange";
     state.selectedEffect = saved.selectedEffect || "none";
-    updateWalletUI();
+    state.unlockedLevel = Math.max(1, saved.unlockedLevel || 1);
+    state.currentLevel = Math.min(state.unlockedLevel, saved.currentLevel || 1);
+    state.gameType = saved.gameType || "levels";
+    state.difficulty = saved.difficulty || "easy";
+    updateHUD();
 }
 
 function saveProgress() {
-    localStorage.setItem(
-        "super_hopper_progress",
-        JSON.stringify({
-            coins: state.coins,
-            ownedSkins: state.ownedSkins,
-            ownedEffects: state.ownedEffects,
-            selectedSkinP1: state.selectedSkinP1,
-            selectedSkinP2: state.selectedSkinP2,
-            selectedEffect: state.selectedEffect
-        })
-    );
+    localStorage.setItem("super_hopper_progress", JSON.stringify({
+        coins: state.coins,
+        ownedSkins: state.ownedSkins,
+        ownedEffects: state.ownedEffects,
+        selectedSkinP1: state.selectedSkinP1,
+        selectedSkinP2: state.selectedSkinP2,
+        selectedEffect: state.selectedEffect,
+        unlockedLevel: state.unlockedLevel,
+        currentLevel: state.currentLevel,
+        gameType: state.gameType,
+        difficulty: state.difficulty
+    }));
 }
 
-function updateWalletUI() {
+function updateHUD() {
     elWalletValue.textContent = state.coins;
+    if (state.gameType === "levels") {
+        elLevelValue.textContent = `L${state.currentLevel}`;
+    } else {
+        elLevelValue.textContent = state.difficulty.toUpperCase();
+    }
+}
+
+function renderLevelSelect() {
+    elLevelSelect.innerHTML = "";
+
+    for (let i = 1; i <= 10; i++) {
+        const level = LEVELS[i];
+        const btn = document.createElement("button");
+        btn.className = "level-btn";
+        if (i === state.currentLevel) btn.classList.add("active");
+        if (i > state.unlockedLevel) btn.classList.add("locked");
+        btn.innerHTML = `${i}<br>${level.name}`;
+        btn.disabled = i > state.unlockedLevel;
+
+        btn.addEventListener("click", () => {
+            if (i > state.unlockedLevel) return;
+            state.currentLevel = i;
+            saveProgress();
+            renderLevelSelect();
+            updateHUD();
+        });
+
+        elLevelSelect.appendChild(btn);
+    }
 }
 
 function openShop() {
@@ -325,13 +351,10 @@ function buySkin(id, playerKey) {
         state.ownedSkins.push(id);
     }
 
-    if (playerKey === "p1") {
-        state.selectedSkinP1 = id;
-    } else {
-        state.selectedSkinP2 = id;
-    }
+    if (playerKey === "p1") state.selectedSkinP1 = id;
+    else state.selectedSkinP2 = id;
 
-    updateWalletUI();
+    updateHUD();
     saveProgress();
     renderShop();
 }
@@ -347,7 +370,7 @@ function buyEffect(id) {
     }
 
     state.selectedEffect = id;
-    updateWalletUI();
+    updateHUD();
     saveProgress();
     renderShop();
 }
@@ -375,9 +398,7 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
         const card = document.createElement("div");
         card.className = "shop-item";
         card.innerHTML = `
-            <div class="shop-preview">
-                ${renderCharacterPreview(item.color)}
-            </div>
+            <div class="shop-preview">${renderCharacterPreview(item.color)}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-price">${owned ? "OWNED" : item.price + " COINS"}</div>
             <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
@@ -388,14 +409,8 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
 }
 
 function renderEffectPreview(item) {
-    if (item.id === "magnet") {
-        return `<div class="effect-magnet"></div>`;
-    }
-
-    if (!item.trail) {
-        return `<span class="effect-none">NO FX</span>`;
-    }
-
+    if (item.id === "magnet") return `<div class="effect-magnet"></div>`;
+    if (!item.trail) return `<span class="effect-none">NO FX</span>`;
     const hex = `#${item.trail.toString(16).padStart(6, "0")}`;
     return `
         <div class="shop-effect-preview">
@@ -409,7 +424,6 @@ function renderEffectPreview(item) {
 function renderShop() {
     renderSkinGrid(elSkinShopP1, state.selectedSkinP1, "p1");
     renderSkinGrid(elSkinShopP2, state.selectedSkinP2, "p2");
-
     elEffectShop.innerHTML = "";
 
     SHOP_DATA.effects.forEach((item) => {
@@ -419,9 +433,7 @@ function renderShop() {
         const card = document.createElement("div");
         card.className = "shop-item";
         card.innerHTML = `
-            <div class="shop-preview">
-                ${renderEffectPreview(item)}
-            </div>
+            <div class="shop-preview">${renderEffectPreview(item)}</div>
             <div class="shop-item-name">${item.name}</div>
             <div class="shop-item-price">${owned ? "OWNED" : item.price + " COINS"}</div>
             <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
@@ -445,12 +457,20 @@ function updateMenuButtons() {
         btn.classList.toggle("active", btn.dataset.mode === state.mode);
     });
 
+    document.querySelectorAll(".game-type-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.gameType === state.gameType);
+    });
+
     document.querySelectorAll(".difficulty-btn").forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.difficulty === state.difficulty);
     });
 
     elSoundToggle.textContent = state.soundEnabled ? "ON" : "OFF";
     elSoundToggle.classList.toggle("active", state.soundEnabled);
+
+    elLevelsGroup.classList.toggle("hidden", state.gameType !== "levels");
+    elDifficultyGroup.classList.toggle("hidden", state.gameType !== "endless");
+
     updateModeUI();
 }
 
@@ -499,8 +519,8 @@ function playTone(freq, duration, type = "square", volume = 0.04) {
     osc.stop(now + duration);
 }
 
-function randomTheme() {
-    return THEMES[Math.floor(Math.random() * THEMES.length)];
+function currentLevelData() {
+    return LEVELS[state.currentLevel];
 }
 
 function createPlayers() {
@@ -592,12 +612,13 @@ function createObstacleMesh() {
     else if (type === 1) geo = new THREE.ConeGeometry(0.42, 0.95, 5);
     else geo = new THREE.CylinderGeometry(0.38, 0.38, 0.9, 6);
 
-    const mat = new THREE.MeshStandardMaterial({
-        color: state.theme.obstacle,
-        flatShading: true
-    });
-
-    const mesh = new THREE.Mesh(geo, mat);
+    const mesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+            color: state.theme.obstacle,
+            flatShading: true
+        })
+    );
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     return mesh;
@@ -631,7 +652,12 @@ function createDecorationMesh() {
 function createCoinMesh(value = 1) {
     const isBig = value === 5;
     const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(isBig ? 0.34 : 0.22, isBig ? 0.34 : 0.22, isBig ? 0.12 : 0.08, 18),
+        new THREE.CylinderGeometry(
+            isBig ? 0.34 : 0.22,
+            isBig ? 0.34 : 0.22,
+            isBig ? 0.12 : 0.08,
+            18
+        ),
         new THREE.MeshStandardMaterial({
             color: isBig ? 0xff9f1c : 0xffd166,
             emissive: isBig ? 0xff9f1c : 0xffd166,
@@ -682,7 +708,10 @@ function addRoad(xCenter) {
 
     const road = new THREE.Mesh(
         new THREE.PlaneGeometry(roadWidth, roadLength),
-        new THREE.MeshStandardMaterial({ color: state.theme.ground, roughness: 1 })
+        new THREE.MeshStandardMaterial({
+            color: state.theme.ground,
+            roughness: 1
+        })
     );
     road.rotation.x = -Math.PI / 2;
     road.position.set(xCenter, 0, -45);
@@ -693,12 +722,18 @@ function addRoad(xCenter) {
     const edgeMat = new THREE.MeshStandardMaterial({ color: state.theme.roadEdge });
     const lineMat = new THREE.MeshStandardMaterial({ color: state.theme.divider });
 
-    const leftEdge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, roadLength), edgeMat);
+    const leftEdge = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.12, roadLength),
+        edgeMat
+    );
     leftEdge.position.set(xCenter - roadWidth / 2, 0.06, -45);
     scene.add(leftEdge);
     floorGroups.push(leftEdge);
 
-    const rightEdge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, roadLength), edgeMat);
+    const rightEdge = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.12, roadLength),
+        edgeMat
+    );
     rightEdge.position.set(xCenter + roadWidth / 2, 0.06, -45);
     scene.add(rightEdge);
     floorGroups.push(rightEdge);
@@ -788,13 +823,31 @@ function startGame() {
         animationId = null;
     }
 
-    const diff = DIFFICULTIES[state.difficulty];
+    let setup;
+
+    if (state.gameType === "levels") {
+        const level = currentLevelData();
+        setup = {
+            speed: level.speed,
+            speedInc: level.speedInc,
+            spawnGap: level.spawnGap,
+            theme: level.theme
+        };
+    } else {
+        const endless = ENDLESS_DIFFICULTIES[state.difficulty];
+        setup = {
+            speed: endless.speed,
+            speedInc: endless.speedInc,
+            spawnGap: endless.spawnGap,
+            theme: endless.theme
+        };
+    }
 
     state.isPlaying = true;
-    state.speed = diff.speed;
-    state.speedInc = diff.speedInc;
-    state.spawnGap = diff.spawnGap;
-    state.theme = randomTheme();
+    state.speed = setup.speed;
+    state.speedInc = setup.speedInc;
+    state.spawnGap = setup.spawnGap;
+    state.theme = setup.theme;
     state.players = createPlayers();
     state.collectedThisRun = 0;
 
@@ -804,6 +857,7 @@ function startGame() {
     elStart.classList.add("hidden");
     elGameOver.classList.add("hidden");
     elScoreDisplay.classList.remove("hidden");
+    elLevelDisplay.classList.remove("hidden");
 
     if (isMobileLike()) elSwipeHint.classList.remove("hidden");
     else elSwipeHint.classList.add("hidden");
@@ -811,6 +865,7 @@ function startGame() {
     elScoreP1.textContent = "0";
     elScoreP2.textContent = "0";
     updateModeUI();
+    updateHUD();
 
     scene.background = new THREE.Color(state.theme.sky);
     scene.fog = new THREE.Fog(state.theme.sky, 12, 58);
@@ -836,13 +891,32 @@ function startGame() {
         playerMeshes.push(mesh);
     });
 
-    for (let i = 0; i < 4; i++) spawnObstacleRow();
-    for (let i = 0; i < 2; i++) spawnCoinRow();
+    for (let i = 0; i < 4; i++) {
+        spawnObstacleRow();
+    }
+
+    for (let i = 0; i < 2; i++) {
+        spawnCoinRow();
+    }
 
     playTone(520, 0.08, "square", 0.05);
     playTone(700, 0.1, "square", 0.04);
 
     animate(lastFrameTime);
+}
+
+function returnToMenu() {
+    state.isPlaying = false;
+    if (animationId) cancelAnimationFrame(animationId);
+
+    elGameOver.classList.add("hidden");
+    elStart.classList.remove("hidden");
+    elScoreDisplay.classList.add("hidden");
+    elLevelDisplay.classList.add("hidden");
+    elSwipeHint.classList.add("hidden");
+
+    renderLevelSelect();
+    updateHUD();
 }
 
 function movePlayerLane(player, direction) {
@@ -930,7 +1004,7 @@ function collectCoin(obj, value) {
     scene.remove(obj.mesh);
     state.coins += value;
     state.collectedThisRun += value;
-    updateWalletUI();
+    updateHUD();
     saveProgress();
     playTone(value === 5 ? 1320 : 1100, 0.06, "square", 0.035);
 }
@@ -1027,29 +1101,59 @@ function updateWorld(dtScale) {
     }
 }
 
-function finishGame() {
+function finishGame(completed) {
     track("game_over", {
+        level: state.currentLevel,
+        mode: state.gameType,
         score: Math.floor(state.players[0]?.score || 0),
-        coins_run: state.collectedThisRun
+        completed
     });
 
+    if (state.gameType === "levels") {
+        if (completed && state.currentLevel < 10 && state.unlockedLevel < state.currentLevel + 1) {
+            state.unlockedLevel = state.currentLevel + 1;
+        }
+        renderLevelSelect();
+    }
+
     saveProgress();
+
     state.isPlaying = false;
     elGameOver.classList.remove("hidden");
     elScoreDisplay.classList.add("hidden");
+    elLevelDisplay.classList.add("hidden");
     elSwipeHint.classList.add("hidden");
 
     const p1 = Math.floor(state.players[0]?.score || 0);
     const p2 = Math.floor(state.players[1]?.score || 0);
 
-    if (state.mode === "1p") {
-        elFinalScore.textContent = `SCORE: ${p1} • COINS: +${state.collectedThisRun}`;
-    } else if (p1 > p2) {
-        elFinalScore.textContent = `PLAYER 1 WINS: ${p1} - ${p2} • COINS: +${state.collectedThisRun}`;
-    } else if (p2 > p1) {
-        elFinalScore.textContent = `PLAYER 2 WINS: ${p2} - ${p1} • COINS: +${state.collectedThisRun}`;
+    if (state.gameType === "endless") {
+        if (state.mode === "1p") {
+            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • SCORE ${p1} • COINS +${state.collectedThisRun}`;
+        } else if (p1 > p2) {
+            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • P1 WINS ${p1}-${p2}`;
+        } else if (p2 > p1) {
+            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • P2 WINS ${p2}-${p1}`;
+        } else {
+            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • DRAW ${p1}-${p2}`;
+        }
+        return;
+    }
+
+    const level = currentLevelData();
+
+    if (completed) {
+        if (state.mode === "1p") {
+            elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • SCORE ${p1} • COINS +${state.collectedThisRun}`;
+        } else if (p1 > p2) {
+            elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • P1 WINS ${p1}-${p2}`;
+        } else if (p2 > p1) {
+            elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • P2 WINS ${p2}-${p1}`;
+        } else {
+            elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • DRAW ${p1}-${p2}`;
+        }
     } else {
-        elFinalScore.textContent = `DRAW: ${p1} - ${p2} • COINS: +${state.collectedThisRun}`;
+        elFinalScore.textContent = `FAILED LEVEL ${level.id} • TARGET ${level.target}`;
     }
 }
 
@@ -1062,18 +1166,24 @@ function animate(now = performance.now()) {
     lastFrameTime = now;
     const dtScale = deltaMs / (1000 / 60);
 
-    state.speed = Math.min(
-        state.speed + state.speedInc * dtScale,
-        CONFIG.maxSpeed
-    );
+    state.speed = Math.min(state.speed + state.speedInc * dtScale, CONFIG.maxSpeed);
 
     updatePlayers(dtScale);
     updateWorld(dtScale);
 
     const allDead = state.players.every((player) => !player.alive);
     if (allDead) {
-        finishGame();
+        finishGame(false);
         return;
+    }
+
+    if (state.gameType === "levels") {
+        const target = currentLevelData().target;
+        const leadScore = Math.max(...state.players.map((p) => p.score));
+        if (leadScore >= target) {
+            finishGame(true);
+            return;
+        }
     }
 
     renderer.render(scene, camera);

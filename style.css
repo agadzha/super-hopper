@@ -65,12 +65,17 @@ button:active {
     box-shadow: 0 1px 0 #999, 0 6px 12px rgba(0, 0, 0, 0.18);
 }
 
-.main-btn {
-    font-size: 1.8rem;
-    padding: 0.85rem 1.6rem;
+button:disabled {
+    cursor: default;
 }
 
-.option-btn.active {
+.main-btn {
+    font-size: 1.6rem;
+    padding: 0.8rem 1.3rem;
+}
+
+.option-btn.active,
+.level-btn.active {
     background: linear-gradient(180deg, #ffd166 0%, #f3b93d 100%);
 }
 
@@ -79,9 +84,9 @@ button:active {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(92vw, 560px);
+    width: min(94vw, 760px);
     text-align: center;
-    padding: 1.7rem 1.8rem;
+    padding: 1.6rem;
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
@@ -90,7 +95,7 @@ button:active {
 }
 
 .title {
-    font-size: clamp(3.6rem, 9vw, 5.8rem);
+    font-size: clamp(3.4rem, 8vw, 5.8rem);
     line-height: 0.9;
     color: var(--accent-color);
     text-shadow: 4px 4px 0 var(--primary-color);
@@ -98,7 +103,7 @@ button:active {
 }
 
 .subtitle {
-    font-size: clamp(1.1rem, 3vw, 1.8rem);
+    font-size: clamp(1rem, 2.8vw, 1.6rem);
     margin-bottom: 1rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -125,6 +130,27 @@ button:active {
 
 .menu-actions {
     margin-top: 1rem;
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.level-btn {
+    min-height: 70px;
+    font-size: 1.1rem;
+    line-height: 1.05;
+    padding: 0.7rem 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.level-btn.locked {
+    opacity: 0.45;
 }
 
 #score-display {
@@ -160,10 +186,10 @@ button:active {
     margin-top: 0.1rem;
 }
 
-#wallet-display {
+#wallet-display,
+#level-display {
     position: fixed;
     top: 16px;
-    left: 180px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -172,9 +198,18 @@ button:active {
     background: rgba(20, 16, 20, 0.54);
     border: 1px solid rgba(255, 255, 255, 0.14);
     color: #fff;
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     z-index: 20;
     backdrop-filter: blur(8px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+#wallet-display {
+    left: 180px;
+}
+
+#level-display {
+    left: 320px;
 }
 
 .wallet-label {
@@ -184,7 +219,7 @@ button:active {
 .shop-open-btn {
     position: fixed;
     top: 16px;
-    left: 310px;
+    left: 455px;
     z-index: 20;
 }
 
@@ -439,11 +474,18 @@ button:active {
 }
 
 @media (max-width: 900px), (pointer: coarse) {
+    .level-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     #wallet-display {
         left: 150px;
         top: 12px;
-        font-size: 1rem;
-        padding: 0.45rem 0.65rem;
+    }
+
+    #level-display {
+        top: 52px;
+        left: 150px;
     }
 
     .shop-open-btn {
@@ -455,9 +497,8 @@ button:active {
     }
 
     #instructions {
-        top: 58px;
+        top: 92px;
         right: 12px;
-        opacity: 0.92;
     }
 
     .instruction-block {
@@ -477,16 +518,17 @@ button:active {
 
     .center-screen {
         width: min(94vw, 500px);
-        padding: 1.3rem 1rem;
+        padding: 1.2rem 0.9rem;
     }
 
     .main-btn {
         width: 100%;
     }
 
-    .option-btn {
-        font-size: 1.15rem;
-        padding: 0.65rem 0.85rem;
+    .option-btn,
+    .level-btn {
+        font-size: 1.1rem;
+        padding: 0.65rem 0.8rem;
     }
 
     #mobile-swipe-hint {
