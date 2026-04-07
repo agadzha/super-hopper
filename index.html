@@ -15,7 +15,7 @@ gtag('config', 'G-575H9T1521');
 <title>SUPER HOPPER DUO</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
 <link rel="stylesheet" href="style.css" />
-</head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-575H9T1521"></script>
 <body>
     <div id="game-container"></div>
 
@@ -39,8 +39,10 @@ gtag('config', 'G-575H9T1521');
 
         <div id="level-display" class="hidden">
             <span class="wallet-label">MODE</span>
-            <span id="level-value">1</span>
+            <span id="level-value">L1</span>
         </div>
+
+        <div id="powerup-status" class="hidden"></div>
 
         <button id="open-shop-btn" class="shop-open-btn">SHOP</button>
 
@@ -60,7 +62,7 @@ gtag('config', 'G-575H9T1521');
 
         <div id="start-screen" class="center-screen">
             <h1 class="title">SUPER HOPPER</h1>
-            <p class="subtitle">LEVELS OR ENDLESS</p>
+            <p class="subtitle">LEVELS, ENDLESS, BOOSTS</p>
 
             <div class="menu-group">
                 <div class="menu-label">MODE</div>
@@ -106,7 +108,7 @@ gtag('config', 'G-575H9T1521');
         </div>
 
         <div id="game-over-screen" class="center-screen hidden">
-            <h1 class="title">GAME OVER</h1>
+            <h1 class="title">RUN OVER</h1>
             <p class="subtitle"><span id="final-score">0</span></p>
             <div class="button-row menu-actions">
                 <button id="restart-btn" class="main-btn">TRY AGAIN</button>
@@ -117,7 +119,7 @@ gtag('config', 'G-575H9T1521');
         <div id="shop-panel" class="hidden">
             <div class="shop-card">
                 <div class="shop-header">
-                    <span>SHOP</span>
+                    <span>SKINS & BOOSTS</span>
                     <button id="close-shop-btn" class="shop-close-btn">X</button>
                 </div>
 
@@ -132,8 +134,8 @@ gtag('config', 'G-575H9T1521');
                 </div>
 
                 <div class="shop-section">
-                    <div class="shop-title">EFFECTS</div>
-                    <div id="effect-shop" class="shop-grid"></div>
+                    <div class="shop-title">BOOSTS IN RUN</div>
+                    <div id="powerup-info" class="shop-grid"></div>
                 </div>
             </div>
         </div>

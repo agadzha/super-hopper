@@ -15,14 +15,47 @@ const CONFIG = {
     roadOffsetX: 3.6,
     gravity: 0.015,
     jumpPower: 0.35,
+    superJumpMultiplier: 1.9,
+    flyHeight: 1.95,
     spawnDistance: -60,
     coinSpawnDistance: -68,
+    powerupSpawnDistance: -72,
     removeDistance: 12,
     maxSpeed: 0.42,
     minObstaclesAhead: 8,
     swipeThreshold: 28,
-    magnetRadius: 4.5,
+    magnetRadius: 4.6,
     magnetPull: 0.16
+};
+
+const POWERUP_TYPES = {
+    fly: {
+        id: "fly",
+        name: "Sky Hop",
+        duration: 5,
+        color: 0x87e8ff,
+        accent: 0xe9fbff,
+        label: "FLY",
+        description: "Float above obstacles for 5s."
+    },
+    jump: {
+        id: "jump",
+        name: "Moon Jump",
+        duration: 10,
+        color: 0xff96de,
+        accent: 0xffe4f6,
+        label: "JUMP",
+        description: "Huge jumps for 10s."
+    },
+    magnet: {
+        id: "magnet",
+        name: "Coin Pull",
+        duration: 10,
+        color: 0xffd166,
+        accent: 0xfff4cc,
+        label: "MAG",
+        description: "Magnet coins for 10s."
+    }
 };
 
 const LEVELS = [
@@ -65,18 +98,72 @@ const ENDLESS_DIFFICULTIES = {
 
 const SHOP_DATA = {
     skins: [
-        { id: "blue", name: "Blue", price: 0, color: 0x54b7ff },
-        { id: "orange", name: "Orange", price: 30, color: 0xff9a62 },
-        { id: "lime", name: "Lime", price: 60, color: 0x8cff66 },
-        { id: "pink", name: "Pink", price: 90, color: 0xff66cc },
-        { id: "gold", name: "Gold", price: 150, color: 0xffd166 }
-    ],
-    effects: [
-        { id: "none", name: "None", price: 0, type: "trail", trail: null },
-        { id: "spark", name: "Spark", price: 50, type: "trail", trail: 0xffd166 },
-        { id: "aqua", name: "Aqua", price: 80, type: "trail", trail: 0x4ecdc4 },
-        { id: "fire", name: "Fire", price: 120, type: "trail", trail: 0xff6b6b },
-        { id: "magnet", name: "Magnet", price: 180, type: "magnet", trail: 0x9b5de5 }
+        {
+            id: "sky-bunny",
+            name: "Sky Bunny",
+            price: 0,
+            baseColor: 0x8ad5ff,
+            accentColor: 0xffffff,
+            innerEarColor: 0xffc4de,
+            glowColor: 0x7cecff,
+            bellyColor: 0xe9f7ff,
+            eyeColor: 0x13233f
+        },
+        {
+            id: "sunset-bunny",
+            name: "Sunset Bunny",
+            price: 0,
+            baseColor: 0xffb08b,
+            accentColor: 0xfff0be,
+            innerEarColor: 0xff8eb8,
+            glowColor: 0xffbc62,
+            bellyColor: 0xfff4d8,
+            eyeColor: 0x3a1d18
+        },
+        {
+            id: "moon-bunny",
+            name: "Moon Bunny",
+            price: 90,
+            baseColor: 0xf6f7ff,
+            accentColor: 0xb7cbff,
+            innerEarColor: 0xd4dbff,
+            glowColor: 0x9ec8ff,
+            bellyColor: 0xffffff,
+            eyeColor: 0x20335d
+        },
+        {
+            id: "sakura-bunny",
+            name: "Sakura Bunny",
+            price: 160,
+            baseColor: 0xffb8d8,
+            accentColor: 0xffffff,
+            innerEarColor: 0xff78b5,
+            glowColor: 0xff9bd8,
+            bellyColor: 0xfff0f7,
+            eyeColor: 0x482340
+        },
+        {
+            id: "neon-bunny",
+            name: "Neon Bunny",
+            price: 260,
+            baseColor: 0x1c2340,
+            accentColor: 0x42ffc7,
+            innerEarColor: 0x9b7cff,
+            glowColor: 0x42ffc7,
+            bellyColor: 0x39456f,
+            eyeColor: 0xeafcff
+        },
+        {
+            id: "royal-bunny",
+            name: "Royal Bunny",
+            price: 390,
+            baseColor: 0xf3c74f,
+            accentColor: 0xfff3c2,
+            innerEarColor: 0xffdc7d,
+            glowColor: 0xffd166,
+            bellyColor: 0xfff6d5,
+            eyeColor: 0x4c3210
+        }
     ]
 };
 
@@ -95,11 +182,9 @@ let state = {
     players: [],
     coins: 0,
     collectedThisRun: 0,
-    ownedSkins: ["blue"],
-    ownedEffects: ["none"],
-    selectedSkinP1: "blue",
-    selectedSkinP2: "orange",
-    selectedEffect: "none"
+    ownedSkins: ["sky-bunny", "sunset-bunny"],
+    selectedSkinP1: "sky-bunny",
+    selectedSkinP2: "sunset-bunny"
 };
 
 const elScoreDisplay = document.getElementById("score-display");
@@ -118,7 +203,8 @@ const elOpenShopFromMenu = document.getElementById("open-shop-from-menu");
 const elCloseShopBtn = document.getElementById("close-shop-btn");
 const elSkinShopP1 = document.getElementById("skin-shop-p1");
 const elSkinShopP2 = document.getElementById("skin-shop-p2");
-const elEffectShop = document.getElementById("effect-shop");
+const elPowerupInfo = document.getElementById("powerup-info");
+const elPowerupStatus = document.getElementById("powerup-status");
 const elSwipeHint = document.getElementById("mobile-swipe-hint");
 const elLevelDisplay = document.getElementById("level-display");
 const elLevelValue = document.getElementById("level-value");
@@ -134,6 +220,8 @@ let playerMeshes = [];
 let floorGroups = [];
 let worldObjects = [];
 let spawnTimer = 0;
+let powerupSpawnTimer = 0;
+let nextPowerupSpawnIn = 7;
 let animationId = null;
 let audioContext = null;
 let lastFrameTime = 0;
@@ -144,6 +232,45 @@ let swipeState = {
     startY: 0,
     playerIndex: 0
 };
+
+function toCssColor(value) {
+    return `#${value.toString(16).padStart(6, "0")}`;
+}
+
+function getSkinById(id) {
+    return SHOP_DATA.skins.find((skin) => skin.id === id) || SHOP_DATA.skins[0];
+}
+
+function getDefaultOwnedSkins() {
+    return SHOP_DATA.skins.filter((skin) => skin.price === 0).map((skin) => skin.id);
+}
+
+function sanitizeOwnedSkins(owned) {
+    if (!Array.isArray(owned)) return getDefaultOwnedSkins();
+    const valid = owned.filter((id) => SHOP_DATA.skins.some((skin) => skin.id === id));
+    return valid.length ? valid : getDefaultOwnedSkins();
+}
+
+function getPowerColor(player) {
+    if (player.flyTimer > 0) return POWERUP_TYPES.fly.color;
+    if (player.magnetTimer > 0) return POWERUP_TYPES.magnet.color;
+    if (player.jumpBoostTimer > 0) return POWERUP_TYPES.jump.color;
+    return getSkinById(player.skinId).glowColor;
+}
+
+function formatTimer(seconds) {
+    return seconds >= 10 ? `${Math.ceil(seconds)}s` : `${seconds.toFixed(1)}s`;
+}
+
+function addPart(group, geometry, material, x, y, z, rx = 0, ry = 0, rz = 0) {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    mesh.rotation.set(rx, ry, rz);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return mesh;
+}
 
 function init() {
     scene = new THREE.Scene();
@@ -170,9 +297,11 @@ function init() {
 
     bindUI();
     loadProgress();
+    updateMenuButtons();
     renderShop();
     renderLevelSelect();
     updateHUD();
+    updatePowerupStatus();
     renderer.render(scene, camera);
 }
 
@@ -203,6 +332,7 @@ function bindUI() {
     document.querySelectorAll(".game-type-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
             state.gameType = btn.dataset.gameType;
+            saveProgress();
             updateMenuButtons();
             updateHUD();
         });
@@ -211,6 +341,7 @@ function bindUI() {
     document.querySelectorAll(".difficulty-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
             state.difficulty = btn.dataset.difficulty;
+            saveProgress();
             updateMenuButtons();
             updateHUD();
         });
@@ -229,8 +360,6 @@ function bindUI() {
     elCloseShopBtn.addEventListener("click", closeShop);
 
     bindSwipeControls();
-    updateMenuButtons();
-    updateModeUI();
 }
 
 function bindSwipeControls() {
@@ -272,26 +401,25 @@ function isMobileLike() {
 function loadProgress() {
     const saved = JSON.parse(localStorage.getItem("super_hopper_progress") || "{}");
     state.coins = saved.coins || 0;
-    state.ownedSkins = saved.ownedSkins || ["blue"];
-    state.ownedEffects = saved.ownedEffects || ["none"];
-    state.selectedSkinP1 = saved.selectedSkinP1 || "blue";
-    state.selectedSkinP2 = saved.selectedSkinP2 || "orange";
-    state.selectedEffect = saved.selectedEffect || "none";
-    state.unlockedLevel = Math.max(1, saved.unlockedLevel || 1);
-    state.currentLevel = Math.min(state.unlockedLevel, saved.currentLevel || 1);
-    state.gameType = saved.gameType || "levels";
-    state.difficulty = saved.difficulty || "easy";
-    updateHUD();
+    state.ownedSkins = sanitizeOwnedSkins(saved.ownedSkins);
+    state.unlockedLevel = Math.max(1, Math.min(10, saved.unlockedLevel || 1));
+    state.currentLevel = Math.max(1, Math.min(state.unlockedLevel, saved.currentLevel || 1));
+    state.gameType = saved.gameType === "endless" ? "endless" : "levels";
+    state.difficulty = ENDLESS_DIFFICULTIES[saved.difficulty] ? saved.difficulty : "easy";
+
+    const fallbackP1 = state.ownedSkins[0] || "sky-bunny";
+    const fallbackP2 = state.ownedSkins[1] || fallbackP1;
+
+    state.selectedSkinP1 = state.ownedSkins.includes(saved.selectedSkinP1) ? saved.selectedSkinP1 : fallbackP1;
+    state.selectedSkinP2 = state.ownedSkins.includes(saved.selectedSkinP2) ? saved.selectedSkinP2 : fallbackP2;
 }
 
 function saveProgress() {
     localStorage.setItem("super_hopper_progress", JSON.stringify({
         coins: state.coins,
         ownedSkins: state.ownedSkins,
-        ownedEffects: state.ownedEffects,
         selectedSkinP1: state.selectedSkinP1,
         selectedSkinP2: state.selectedSkinP2,
-        selectedEffect: state.selectedEffect,
         unlockedLevel: state.unlockedLevel,
         currentLevel: state.currentLevel,
         gameType: state.gameType,
@@ -306,6 +434,37 @@ function updateHUD() {
     } else {
         elLevelValue.textContent = state.difficulty.toUpperCase();
     }
+}
+
+function updatePowerupStatus() {
+    if (!state.isPlaying || !state.players.length) {
+        elPowerupStatus.classList.add("hidden");
+        elPowerupStatus.innerHTML = "";
+        return;
+    }
+
+    const items = [];
+
+    state.players.forEach((player, index) => {
+        if (player.flyTimer > 0) {
+            items.push(`<div class="powerup-pill fly"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">FLY</span><span class="powerup-time">${formatTimer(player.flyTimer)}</span></div>`);
+        }
+        if (player.jumpBoostTimer > 0) {
+            items.push(`<div class="powerup-pill jump"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">JUMP</span><span class="powerup-time">${formatTimer(player.jumpBoostTimer)}</span></div>`);
+        }
+        if (player.magnetTimer > 0) {
+            items.push(`<div class="powerup-pill magnet"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">MAG</span><span class="powerup-time">${formatTimer(player.magnetTimer)}</span></div>`);
+        }
+    });
+
+    if (!items.length) {
+        elPowerupStatus.classList.add("hidden");
+        elPowerupStatus.innerHTML = "";
+        return;
+    }
+
+    elPowerupStatus.innerHTML = items.join("");
+    elPowerupStatus.classList.remove("hidden");
 }
 
 function renderLevelSelect() {
@@ -342,8 +501,7 @@ function closeShop() {
 }
 
 function buySkin(id, playerKey) {
-    const item = SHOP_DATA.skins.find((x) => x.id === id);
-    if (!item) return;
+    const item = getSkinById(id);
 
     if (!state.ownedSkins.includes(id)) {
         if (state.coins < item.price) return;
@@ -359,31 +517,22 @@ function buySkin(id, playerKey) {
     renderShop();
 }
 
-function buyEffect(id) {
-    const item = SHOP_DATA.effects.find((x) => x.id === id);
-    if (!item) return;
-
-    if (!state.ownedEffects.includes(id)) {
-        if (state.coins < item.price) return;
-        state.coins -= item.price;
-        state.ownedEffects.push(id);
-    }
-
-    state.selectedEffect = id;
-    updateHUD();
-    saveProgress();
-    renderShop();
-}
-
-function renderCharacterPreview(color) {
-    const hex = `#${color.toString(16).padStart(6, "0")}`;
+function renderCharacterPreview(skin) {
     return `
-        <div class="character-preview" style="--skin-color:${hex}">
+        <div class="character-preview" style="--skin-base:${toCssColor(skin.baseColor)}; --skin-accent:${toCssColor(skin.accentColor)}; --skin-inner:${toCssColor(skin.innerEarColor)}; --skin-glow:${toCssColor(skin.glowColor)}; --skin-belly:${toCssColor(skin.bellyColor)};">
+            <div class="character-aura"></div>
             <div class="character-ear left"></div>
             <div class="character-ear right"></div>
+            <div class="character-ear-inner left"></div>
+            <div class="character-ear-inner right"></div>
             <div class="character-head"></div>
+            <div class="character-belly"></div>
+            <div class="character-cheek left"></div>
+            <div class="character-cheek right"></div>
             <div class="character-eye left"></div>
             <div class="character-eye right"></div>
+            <div class="character-nose"></div>
+            <div class="character-gem"></div>
         </div>
     `;
 }
@@ -398,9 +547,9 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
         const card = document.createElement("div");
         card.className = "shop-item";
         card.innerHTML = `
-            <div class="shop-preview">${renderCharacterPreview(item.color)}</div>
+            <div class="shop-preview">${renderCharacterPreview(item)}</div>
             <div class="shop-item-name">${item.name}</div>
-            <div class="shop-item-price">${owned ? "OWNED" : item.price + " COINS"}</div>
+            <div class="shop-item-price">${owned ? "OWNED" : `${item.price} COINS`}</div>
             <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
         `;
         card.querySelector("button").addEventListener("click", () => buySkin(item.id, playerKey));
@@ -408,48 +557,30 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
     });
 }
 
-function renderEffectPreview(item) {
-    if (item.id === "magnet") return `<div class="effect-magnet"></div>`;
-    if (!item.trail) return `<span class="effect-none">NO FX</span>`;
-    const hex = `#${item.trail.toString(16).padStart(6, "0")}`;
-    return `
-        <div class="shop-effect-preview">
-            <span class="effect-dot" style="background:${hex}"></span>
-            <span class="effect-dot" style="background:${hex}"></span>
-            <span class="effect-dot" style="background:${hex}"></span>
-        </div>
-    `;
+function renderPowerupPreview(powerup) {
+    return `<div class="boost-preview ${powerup.id}">${powerup.label}</div>`;
+}
+
+function renderPowerupInfo() {
+    elPowerupInfo.innerHTML = "";
+
+    Object.values(POWERUP_TYPES).forEach((powerup) => {
+        const card = document.createElement("div");
+        card.className = "shop-item";
+        card.innerHTML = `
+            <div class="shop-preview">${renderPowerupPreview(powerup)}</div>
+            <div class="shop-item-name">${powerup.name}</div>
+            <div class="shop-item-price">SPAWNS IN RUN • ${powerup.duration}S</div>
+            <div class="shop-item-note">${powerup.description}</div>
+        `;
+        elPowerupInfo.appendChild(card);
+    });
 }
 
 function renderShop() {
     renderSkinGrid(elSkinShopP1, state.selectedSkinP1, "p1");
     renderSkinGrid(elSkinShopP2, state.selectedSkinP2, "p2");
-    elEffectShop.innerHTML = "";
-
-    SHOP_DATA.effects.forEach((item) => {
-        const owned = state.ownedEffects.includes(item.id);
-        const selected = state.selectedEffect === item.id;
-
-        const card = document.createElement("div");
-        card.className = "shop-item";
-        card.innerHTML = `
-            <div class="shop-preview">${renderEffectPreview(item)}</div>
-            <div class="shop-item-name">${item.name}</div>
-            <div class="shop-item-price">${owned ? "OWNED" : item.price + " COINS"}</div>
-            <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
-        `;
-        card.querySelector("button").addEventListener("click", () => buyEffect(item.id));
-        elEffectShop.appendChild(card);
-    });
-}
-
-function getSkinColorById(id) {
-    const item = SHOP_DATA.skins.find((x) => x.id === id);
-    return item ? item.color : 0x54b7ff;
-}
-
-function getSelectedEffect() {
-    return SHOP_DATA.effects.find((x) => x.id === state.selectedEffect) || SHOP_DATA.effects[0];
+    renderPowerupInfo();
 }
 
 function updateMenuButtons() {
@@ -524,81 +655,124 @@ function currentLevelData() {
 }
 
 function createPlayers() {
+    const createPlayer = (name, roadX, controls, skinId) => ({
+        name,
+        roadX,
+        lane: 0,
+        currentLaneX: roadX,
+        isJumping: false,
+        jumpVel: 0,
+        playerY: 0,
+        alive: true,
+        score: 0,
+        controls,
+        skinId,
+        flyTimer: 0,
+        jumpBoostTimer: 0,
+        magnetTimer: 0,
+        bobOffset: Math.random() * Math.PI * 2
+    });
+
     if (state.mode === "1p") {
         return [
-            {
-                name: "PLAYER 1",
-                roadX: 0,
-                lane: 0,
-                currentLaneX: 0,
-                isJumping: false,
-                jumpVel: 0,
-                playerY: 0,
-                alive: true,
-                score: 0,
-                controls: { left: "KeyA", right: "KeyD", jump: "KeyW" },
-                color: getSkinColorById(state.selectedSkinP1)
-            }
+            createPlayer("PLAYER 1", 0, { left: "KeyA", right: "KeyD", jump: "KeyW" }, state.selectedSkinP1)
         ];
     }
 
     return [
-        {
-            name: "PLAYER 1",
-            roadX: -CONFIG.roadOffsetX,
-            lane: 0,
-            currentLaneX: -CONFIG.roadOffsetX,
-            isJumping: false,
-            jumpVel: 0,
-            playerY: 0,
-            alive: true,
-            score: 0,
-            controls: { left: "KeyA", right: "KeyD", jump: "KeyW" },
-            color: getSkinColorById(state.selectedSkinP1)
-        },
-        {
-            name: "PLAYER 2",
-            roadX: CONFIG.roadOffsetX,
-            lane: 0,
-            currentLaneX: CONFIG.roadOffsetX,
-            isJumping: false,
-            jumpVel: 0,
-            playerY: 0,
-            alive: true,
-            score: 0,
-            controls: { left: "ArrowLeft", right: "ArrowRight", jump: "ArrowUp" },
-            color: getSkinColorById(state.selectedSkinP2)
-        }
+        createPlayer("PLAYER 1", -CONFIG.roadOffsetX, { left: "KeyA", right: "KeyD", jump: "KeyW" }, state.selectedSkinP1),
+        createPlayer("PLAYER 2", CONFIG.roadOffsetX, { left: "ArrowLeft", right: "ArrowRight", jump: "ArrowUp" }, state.selectedSkinP2)
     ];
 }
 
-function createPlayerMesh(color) {
+function createPlayerMesh(skinId) {
+    const skin = getSkinById(skinId);
     const group = new THREE.Group();
-    const mat = new THREE.MeshStandardMaterial({ color, flatShading: true });
 
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), mat);
-    body.position.y = 0.5;
-    body.castShadow = true;
-    group.add(body);
+    const baseMat = new THREE.MeshStandardMaterial({
+        color: skin.baseColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.15,
+        flatShading: true
+    });
+    const accentMat = new THREE.MeshStandardMaterial({
+        color: skin.accentColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.22,
+        flatShading: true
+    });
+    const innerMat = new THREE.MeshStandardMaterial({
+        color: skin.innerEarColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.18,
+        flatShading: true
+    });
+    const bellyMat = new THREE.MeshStandardMaterial({
+        color: skin.bellyColor,
+        flatShading: true
+    });
+    const glowMat = new THREE.MeshStandardMaterial({
+        color: skin.glowColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.9,
+        flatShading: true
+    });
+    const darkMat = new THREE.MeshBasicMaterial({ color: skin.eyeColor });
+    const auraMat = new THREE.MeshStandardMaterial({
+        color: skin.glowColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.18
+    });
+    const boostAuraMat = new THREE.MeshStandardMaterial({
+        color: skin.glowColor,
+        emissive: skin.glowColor,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.8
+    });
 
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-    const eyeGeo = new THREE.BoxGeometry(0.12, 0.12, 0.05);
+    addPart(group, new THREE.BoxGeometry(0.92, 0.92, 0.82), baseMat, 0, 0.5, 0);
+    addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
+    addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, -0.2, 1.05, -0.03, 0, 0, -0.08);
+    addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, 0.2, 1.05, -0.03, 0, 0, 0.08);
+    addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, -0.2, 1.07, 0.04, 0, 0, -0.08);
+    addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, 0.2, 1.07, 0.04, 0, 0, 0.08);
+    addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, -0.25, 0.44, 0.35);
+    addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, 0.25, 0.44, 0.35);
+    addPart(group, new THREE.SphereGeometry(0.06, 10, 10), accentMat, 0, 0.34, 0.43);
+    addPart(group, new THREE.SphereGeometry(0.13, 10, 10), accentMat, 0, 0.72, 0.3);
+    addPart(group, new THREE.SphereGeometry(0.15, 10, 10), accentMat, 0, 0.42, -0.42);
 
-    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-    leftEye.position.set(-0.18, 0.6, 0.46);
-    group.add(leftEye);
+    const leftEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, -0.16, 0.58, 0.41);
+    const rightEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, 0.16, 0.58, 0.41);
+    leftEye.receiveShadow = false;
+    rightEye.receiveShadow = false;
 
-    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-    rightEye.position.set(0.18, 0.6, 0.46);
-    group.add(rightEye);
+    const foreheadGem = addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, 0.9, 0.34, 0.3, 0, 0.2);
+    const halo = addPart(group, new THREE.TorusGeometry(0.36, 0.05, 10, 24), glowMat, 0, 1.18, -0.02, Math.PI / 2, 0, 0);
+    const aura = addPart(group, new THREE.SphereGeometry(0.95, 16, 16), auraMat, 0, 0.5, 0);
+    const boostAura = addPart(group, new THREE.TorusGeometry(0.62, 0.05, 8, 26), boostAuraMat, 0, -0.05, 0, Math.PI / 2, 0, 0);
 
-    const leftEar = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.28, 0.12), mat);
-    leftEar.position.set(-0.18, 1.05, 0);
-    group.add(leftEar);
+    aura.castShadow = false;
+    halo.castShadow = false;
+    boostAura.castShadow = false;
+    boostAura.visible = false;
 
-    const rightEar = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.28, 0.12), mat);
-    rightEar.position.set(0.18, 1.05, 0);
-    group.add(rightEar);
+    group.userData = {
+        skin,
+        glowMaterials: [
+            { material: baseMat, base: 0.15 },
+            { material: accentMat, base: 0.22 },
+            { material: innerMat, base: 0.18 },
+            { material: glowMat, base: 0.9 }
+        ],
+        aura,
+        halo,
+        boostAura,
+        foreheadGem
+    };
 
     scene.add(group);
     return group;
@@ -669,22 +843,69 @@ function createCoinMesh(value = 1) {
     return mesh;
 }
 
-function spawnTrail(x, y, z) {
-    const effect = getSelectedEffect();
-    if (effect.type !== "trail" || !effect.trail) return;
+function createPowerupMesh(kind) {
+    const powerup = POWERUP_TYPES[kind];
+    const group = new THREE.Group();
 
+    const coreMat = new THREE.MeshStandardMaterial({
+        color: powerup.color,
+        emissive: powerup.color,
+        emissiveIntensity: 0.75,
+        flatShading: true
+    });
+    const accentMat = new THREE.MeshStandardMaterial({
+        color: powerup.accent,
+        emissive: powerup.color,
+        emissiveIntensity: 0.35,
+        flatShading: true
+    });
+    const auraMat = new THREE.MeshStandardMaterial({
+        color: powerup.color,
+        emissive: powerup.color,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.24
+    });
+
+    addPart(group, new THREE.OctahedronGeometry(0.2), coreMat, 0, 0, 0);
+
+    if (kind === "fly") {
+        addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, -0.23, 0, 0, 0, 0, 0.5);
+        addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, 0.23, 0, 0, 0, 0, -0.5);
+        addPart(group, new THREE.TorusGeometry(0.34, 0.04, 8, 24), accentMat, 0, 0, 0, Math.PI / 2, 0, 0);
+    } else if (kind === "jump") {
+        addPart(group, new THREE.CylinderGeometry(0.08, 0.08, 0.38, 10), accentMat, 0, -0.12, 0);
+        addPart(group, new THREE.ConeGeometry(0.14, 0.26, 6), accentMat, 0, 0.26, 0);
+    } else {
+        addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, -0.18, 0, 0);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, 0.18, 0, 0);
+        addPart(group, new THREE.BoxGeometry(0.36, 0.08, 0.08), accentMat, 0, -0.18, 0);
+    }
+
+    const aura = addPart(group, new THREE.SphereGeometry(0.5, 12, 12), auraMat, 0, 0, 0);
+    aura.castShadow = false;
+
+    group.userData = {
+        spin: 0.06 + Math.random() * 0.03,
+        powerup
+    };
+
+    return group;
+}
+
+function spawnTrail(x, y, z, color, scale = 0.08) {
     const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08, 6, 6),
+        new THREE.SphereGeometry(scale, 6, 6),
         new THREE.MeshStandardMaterial({
-            color: effect.trail,
-            emissive: effect.trail,
-            emissiveIntensity: 0.4,
+            color,
+            emissive: color,
+            emissiveIntensity: 0.45,
             transparent: true,
             opacity: 1
         })
     );
 
-    mesh.position.set(x, y, z - 0.4);
+    mesh.position.set(x, y, z - 0.35);
     scene.add(mesh);
     worldObjects.push({
         mesh,
@@ -722,27 +943,18 @@ function addRoad(xCenter) {
     const edgeMat = new THREE.MeshStandardMaterial({ color: state.theme.roadEdge });
     const lineMat = new THREE.MeshStandardMaterial({ color: state.theme.divider });
 
-    const leftEdge = new THREE.Mesh(
-        new THREE.BoxGeometry(0.14, 0.12, roadLength),
-        edgeMat
-    );
+    const leftEdge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, roadLength), edgeMat);
     leftEdge.position.set(xCenter - roadWidth / 2, 0.06, -45);
     scene.add(leftEdge);
     floorGroups.push(leftEdge);
 
-    const rightEdge = new THREE.Mesh(
-        new THREE.BoxGeometry(0.14, 0.12, roadLength),
-        edgeMat
-    );
+    const rightEdge = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, roadLength), edgeMat);
     rightEdge.position.set(xCenter + roadWidth / 2, 0.06, -45);
     scene.add(rightEdge);
     floorGroups.push(rightEdge);
 
     PLAYER_LANES.forEach((laneLine) => {
-        const line = new THREE.Mesh(
-            new THREE.BoxGeometry(0.08, 0.03, roadLength),
-            lineMat
-        );
+        const line = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, roadLength), lineMat);
         line.position.set(xCenter + laneLine * CONFIG.laneWidth, 0.03, -45);
         scene.add(line);
         floorGroups.push(line);
@@ -770,11 +982,7 @@ function spawnObstacleRow() {
         if (!player.alive && state.mode === "2p") return;
 
         const obstacle = createObstacleMesh();
-        obstacle.position.set(
-            player.roadX + lane * CONFIG.laneWidth,
-            0.45,
-            CONFIG.spawnDistance
-        );
+        obstacle.position.set(player.roadX + lane * CONFIG.laneWidth, 0.45, CONFIG.spawnDistance);
         scene.add(obstacle);
 
         worldObjects.push({
@@ -791,6 +999,8 @@ function spawnCoinRow() {
     const value = Math.random() < 0.15 ? 5 : 1;
 
     state.players.forEach((player, index) => {
+        if (!player.alive && state.mode === "2p") return;
+
         const coin = createCoinMesh(value);
         coin.position.set(
             player.roadX + lane * CONFIG.laneWidth,
@@ -809,10 +1019,32 @@ function spawnCoinRow() {
     });
 }
 
+function spawnPowerupRow() {
+    const kinds = Object.keys(POWERUP_TYPES);
+    const kind = kinds[Math.floor(Math.random() * kinds.length)];
+    const lane = OBSTACLE_LANES[Math.floor(Math.random() * OBSTACLE_LANES.length)];
+
+    state.players.forEach((player, index) => {
+        if (!player.alive && state.mode === "2p") return;
+
+        const powerup = createPowerupMesh(kind);
+        powerup.position.set(player.roadX + lane * CONFIG.laneWidth, 1.2, CONFIG.powerupSpawnDistance);
+        scene.add(powerup);
+
+        worldObjects.push({
+            mesh: powerup,
+            type: "powerup",
+            owner: index,
+            kind,
+            taken: false,
+            baseY: 1.2,
+            phase: Math.random() * Math.PI * 2
+        });
+    });
+}
+
 function countObstaclesAhead() {
-    return worldObjects.filter(
-        (obj) => obj.type === "obstacle" && obj.mesh.position.z < 0
-    ).length;
+    return worldObjects.filter((obj) => obj.type === "obstacle" && obj.mesh.position.z < 0).length;
 }
 
 function startGame() {
@@ -852,6 +1084,8 @@ function startGame() {
     state.collectedThisRun = 0;
 
     spawnTimer = 0;
+    powerupSpawnTimer = 0;
+    nextPowerupSpawnIn = 6 + Math.random() * 4;
     lastFrameTime = performance.now();
 
     elStart.classList.add("hidden");
@@ -866,6 +1100,7 @@ function startGame() {
     elScoreP2.textContent = "0";
     updateModeUI();
     updateHUD();
+    updatePowerupStatus();
 
     scene.background = new THREE.Color(state.theme.sky);
     scene.fog = new THREE.Fog(state.theme.sky, 12, 58);
@@ -886,18 +1121,13 @@ function startGame() {
     addDecorations();
 
     state.players.forEach((player) => {
-        const mesh = createPlayerMesh(player.color);
+        const mesh = createPlayerMesh(player.skinId);
         mesh.position.set(player.currentLaneX, 0.45, 0);
         playerMeshes.push(mesh);
     });
 
-    for (let i = 0; i < 4; i++) {
-        spawnObstacleRow();
-    }
-
-    for (let i = 0; i < 2; i++) {
-        spawnCoinRow();
-    }
+    for (let i = 0; i < 4; i++) spawnObstacleRow();
+    for (let i = 0; i < 2; i++) spawnCoinRow();
 
     playTone(520, 0.08, "square", 0.05);
     playTone(700, 0.1, "square", 0.04);
@@ -914,6 +1144,7 @@ function returnToMenu() {
     elScoreDisplay.classList.add("hidden");
     elLevelDisplay.classList.add("hidden");
     elSwipeHint.classList.add("hidden");
+    elPowerupStatus.classList.add("hidden");
 
     renderLevelSelect();
     updateHUD();
@@ -936,10 +1167,10 @@ function triggerPlayerAction(playerIndex, action) {
     } else if (action === "right") {
         movePlayerLane(player, 1);
         playTone(520, 0.03, "square", 0.02);
-    } else if (action === "jump" && !player.isJumping) {
+    } else if (action === "jump" && !player.isJumping && player.flyTimer <= 0) {
         player.isJumping = true;
-        player.jumpVel = CONFIG.jumpPower;
-        playTone(880, 0.08, "square", 0.04);
+        player.jumpVel = CONFIG.jumpPower * (player.jumpBoostTimer > 0 ? CONFIG.superJumpMultiplier : 1);
+        playTone(player.jumpBoostTimer > 0 ? 1020 : 880, 0.08, "square", 0.04);
     }
 }
 
@@ -958,13 +1189,36 @@ function handleKeyboardInput(e) {
     });
 }
 
+function applyPowerup(player, kind) {
+    const data = POWERUP_TYPES[kind];
+
+    if (kind === "fly") player.flyTimer = Math.max(player.flyTimer, data.duration);
+    if (kind === "jump") player.jumpBoostTimer = Math.max(player.jumpBoostTimer, data.duration);
+    if (kind === "magnet") player.magnetTimer = Math.max(player.magnetTimer, data.duration);
+
+    track("powerup_collect", {
+        kind,
+        mode: state.gameType
+    });
+
+    if (kind === "fly") playTone(980, 0.09, "triangle", 0.05);
+    if (kind === "jump") playTone(1180, 0.08, "triangle", 0.05);
+    if (kind === "magnet") playTone(860, 0.1, "triangle", 0.05);
+
+    updatePowerupStatus();
+}
+
 function updatePlayers(dtScale) {
-    const effect = getSelectedEffect();
+    const dtSeconds = dtScale / 60;
+    const now = performance.now() * 0.005;
 
     state.players.forEach((player, index) => {
         if (!player.alive) return;
 
         player.score += state.speed * dtScale;
+        player.flyTimer = Math.max(0, player.flyTimer - dtSeconds);
+        player.jumpBoostTimer = Math.max(0, player.jumpBoostTimer - dtSeconds);
+        player.magnetTimer = Math.max(0, player.magnetTimer - dtSeconds);
 
         const mesh = playerMeshes[index];
         const targetX = player.roadX + player.lane * CONFIG.laneWidth;
@@ -973,7 +1227,12 @@ function updatePlayers(dtScale) {
         player.currentLaneX += (targetX - player.currentLaneX) * Math.min(1, 0.18 * dtScale);
         mesh.position.x = player.currentLaneX;
 
-        if (player.isJumping) {
+        if (player.flyTimer > 0) {
+            player.isJumping = false;
+            player.jumpVel = 0;
+            const flyTarget = CONFIG.flyHeight + Math.sin(now * 1.7 + player.bobOffset) * 0.16;
+            player.playerY += (flyTarget - player.playerY) * Math.min(1, 0.18 * dtScale);
+        } else if (player.isJumping) {
             player.playerY += player.jumpVel * dtScale;
             player.jumpVel -= CONFIG.gravity * dtScale;
 
@@ -982,21 +1241,48 @@ function updatePlayers(dtScale) {
                 player.isJumping = false;
                 player.jumpVel = 0;
             }
+        } else if (player.playerY > 0.12) {
+            player.playerY = Math.max(0, player.playerY - 0.18 * dtScale);
         } else {
-            player.playerY = Math.abs(Math.sin(Date.now() * 0.015 + index)) * 0.08;
+            player.playerY = Math.abs(Math.sin(Date.now() * 0.015 + player.bobOffset)) * 0.08;
         }
 
         mesh.position.y = player.playerY + 0.45;
-        mesh.rotation.x = player.isJumping ? -0.18 : 0;
+        mesh.rotation.x = player.flyTimer > 0 ? -0.08 : player.isJumping ? -0.18 : 0;
         mesh.rotation.z = (player.currentLaneX - prevX) * -0.7;
 
-        if (effect.type === "trail" && Math.random() < 0.35) {
-            spawnTrail(mesh.position.x, mesh.position.y, mesh.position.z);
+        if (mesh.userData.halo) {
+            mesh.userData.halo.rotation.z += 0.015 * dtScale;
+        }
+        if (mesh.userData.foreheadGem) {
+            mesh.userData.foreheadGem.rotation.y += 0.03 * dtScale;
+        }
+        if (mesh.userData.aura) {
+            mesh.userData.aura.material.opacity = player.flyTimer > 0 ? 0.26 : 0.16;
+        }
+        if (mesh.userData.boostAura) {
+            const boostColor = getPowerColor(player);
+            mesh.userData.boostAura.visible = player.flyTimer > 0 || player.jumpBoostTimer > 0 || player.magnetTimer > 0;
+            mesh.userData.boostAura.material.color.setHex(boostColor);
+            mesh.userData.boostAura.material.emissive.setHex(boostColor);
+            mesh.userData.boostAura.rotation.z += 0.03 * dtScale;
+        }
+        if (mesh.userData.glowMaterials) {
+            mesh.userData.glowMaterials.forEach((entry) => {
+                entry.material.emissiveIntensity = entry.base * (0.82 + 0.25 * Math.sin(now * 2.2 + index));
+            });
+        }
+
+        const trailColor = getPowerColor(player);
+        const trailChance = player.flyTimer > 0 ? 0.42 : 0.18;
+        if (Math.random() < trailChance) {
+            spawnTrail(mesh.position.x, mesh.position.y, mesh.position.z, trailColor, player.flyTimer > 0 ? 0.11 : 0.08);
         }
     });
 
     elScoreP1.textContent = Math.floor(state.players[0]?.score || 0);
     elScoreP2.textContent = Math.floor(state.players[1]?.score || 0);
+    updatePowerupStatus();
 }
 
 function collectCoin(obj, value) {
@@ -1010,12 +1296,19 @@ function collectCoin(obj, value) {
 }
 
 function updateWorld(dtScale) {
-    const effect = getSelectedEffect();
+    const dtSeconds = dtScale / 60;
     spawnTimer += state.speed * dtScale;
+    powerupSpawnTimer += dtSeconds;
 
     if (spawnTimer >= state.spawnGap) {
         spawnObstacleRow();
         spawnTimer = 0;
+    }
+
+    if (powerupSpawnTimer >= nextPowerupSpawnIn) {
+        spawnPowerupRow();
+        powerupSpawnTimer = 0;
+        nextPowerupSpawnIn = 6 + Math.random() * 4.5;
     }
 
     for (let i = worldObjects.length - 1; i >= 0; i--) {
@@ -1057,7 +1350,7 @@ function updateWorld(dtScale) {
                 const dz = mesh.position.z - obj.mesh.position.z;
                 const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-                if (effect.type === "magnet" && distance < CONFIG.magnetRadius) {
+                if (player.magnetTimer > 0 && distance < CONFIG.magnetRadius) {
                     const pull = CONFIG.magnetPull * dtScale;
                     obj.mesh.position.x += (mesh.position.x - obj.mesh.position.x) * pull;
                     obj.mesh.position.y += (mesh.position.y - obj.mesh.position.y) * pull;
@@ -1065,11 +1358,34 @@ function updateWorld(dtScale) {
                 }
 
                 if (obj.mesh.position.z > -1.2 && obj.mesh.position.z < 1.2) {
-                    if (Math.abs(dx) < 0.9 && Math.abs(dy) < 1.1 && Math.abs(dz) < 1.2) {
+                    const collectY = player.flyTimer > 0 ? 1.8 : 1.1;
+                    if (Math.abs(dx) < 0.9 && Math.abs(dy) < collectY && Math.abs(dz) < 1.2) {
                         collectCoin(obj, obj.value || 1);
                         worldObjects.splice(i, 1);
                         continue;
                     }
+                }
+            }
+        }
+
+        if (obj.type === "powerup") {
+            const player = state.players[obj.owner];
+            const mesh = playerMeshes[obj.owner];
+
+            obj.mesh.rotation.y += obj.mesh.userData.spin * dtScale;
+            obj.mesh.position.y = obj.baseY + Math.sin(performance.now() * 0.006 + obj.phase) * 0.16;
+
+            if (player && player.alive && !obj.taken) {
+                const dx = Math.abs(mesh.position.x - obj.mesh.position.x);
+                const dy = Math.abs(mesh.position.y - obj.mesh.position.y);
+                const dz = Math.abs(mesh.position.z - obj.mesh.position.z);
+
+                if (dx < 0.95 && dy < 1.3 && dz < 1.2) {
+                    obj.taken = true;
+                    scene.remove(obj.mesh);
+                    applyPowerup(player, obj.kind);
+                    worldObjects.splice(i, 1);
+                    continue;
                 }
             }
         }
@@ -1123,6 +1439,7 @@ function finishGame(completed) {
     elScoreDisplay.classList.add("hidden");
     elLevelDisplay.classList.add("hidden");
     elSwipeHint.classList.add("hidden");
+    elPowerupStatus.classList.add("hidden");
 
     const p1 = Math.floor(state.players[0]?.score || 0);
     const p2 = Math.floor(state.players[1]?.score || 0);
@@ -1179,7 +1496,7 @@ function animate(now = performance.now()) {
 
     if (state.gameType === "levels") {
         const target = currentLevelData().target;
-        const leadScore = Math.max(...state.players.map((p) => p.score));
+        const leadScore = Math.max(...state.players.map((player) => player.score));
         if (leadScore >= target) {
             finishGame(true);
             return;
