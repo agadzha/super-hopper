@@ -316,6 +316,12 @@ const elSkinShopP1 = document.getElementById("skin-shop-p1");
 const elSkinShopP2 = document.getElementById("skin-shop-p2");
 const elPowerupInfo = document.getElementById("powerup-info");
 const elPowerupStatus = document.getElementById("powerup-status");
+const elInspectViewport = document.getElementById("inspect-viewport");
+const elInspectName = document.getElementById("inspect-name");
+const elInspectMeta = document.getElementById("inspect-meta");
+const elInspectLeftBtn = document.getElementById("inspect-left-btn");
+const elInspectResetBtn = document.getElementById("inspect-reset-btn");
+const elInspectRightBtn = document.getElementById("inspect-right-btn");
 const elSwipeHint = document.getElementById("mobile-swipe-hint");
 const elLevelDisplay = document.getElementById("level-display");
 const elLevelValue = document.getElementById("level-value");
@@ -336,6 +342,19 @@ let nextPowerupSpawnIn = 7;
 let animationId = null;
 let audioContext = null;
 let lastFrameTime = 0;
+let inspectScene;
+let inspectCamera;
+let inspectRenderer;
+let inspectMesh = null;
+let inspectAnimationId = null;
+let inspectRotationY = 0.35;
+let inspectRotationX = -0.12;
+let inspectDragging = false;
+let inspectPointerId = null;
+let inspectDragX = 0;
+let inspectDragY = 0;
+let inspectLastTime = 0;
+let inspectDistance = 3.9;
 
 let swipeState = {
     tracking: false,
@@ -382,6 +401,28 @@ function addPart(group, geometry, material, x, y, z, rx = 0, ry = 0, rz = 0) {
     mesh.receiveShadow = true;
     group.add(mesh);
     return mesh;
+}
+
+function updateMeshPresentation(group, time, accentScale = 1, options = {}) {
+    if (!group?.userData) return;
+    const skin = group.userData.skin;
+    const highlightColor = options.highlightColor || skin.glowColor;
+
+    if (group.userData.animatedParts) {
+        group.userData.animatedParts.forEach((part, partIndex) => {
+            const wave = Math.sin(time * part.speed + part.phase + partIndex * 0.5) * part.amplitude;
+            if (part.axis === "x") part.mesh.rotation.x = part.baseRotation.x + wave;
+            else if (part.axis === "y") part.mesh.rotation.y = part.baseRotation.y + wave;
+            else part.mesh.rotation.z = part.baseRotation.z + wave;
+        });
+    }
+
+    if (group.userData.glowMaterials) {
+        group.userData.glowMaterials.forEach((entry, index) => {
+            entry.material.emissive.setHex(highlightColor);
+            entry.material.emissiveIntensity = entry.base * accentScale * (0.88 + 0.22 * Math.sin(time * 2 + index));
+        });
+    }
 }
 
 function init() {
@@ -472,6 +513,7 @@ function bindUI() {
     elCloseShopBtn.addEventListener("click", closeShop);
 
     bindSwipeControls();
+    bindInspectViewer();
 }
 
 function bindSwipeControls() {
@@ -579,6 +621,73 @@ function updatePowerupStatus() {
     elPowerupStatus.classList.remove("hidden");
 }
 
+function resetInspectPose() {
+    inspectRotationY = 0.35;
+    inspectRotationX = -0.12;
+    inspectDistance = 3.9;
+}
+
+function bindInspectViewer() {
+    if (!elInspectViewport) return;
+
+    const onPointerMove = (event) => {
+        if (!inspectDragging || event.pointerId !== inspectPointerId) return;
+        const dx = event.clientX - inspectDragX;
+        const dy = event.clientY - inspectDragY;
+        inspectDragX = event.clientX;
+        inspectDragY = event.clientY;
+        inspectRotationY += dx * 0.012;
+        inspectRotationX = Math.max(-0.7, Math.min(0.45, inspectRotationX + dy * 0.008));
+    };
+
+    const onPointerUp = (event) => {
+        if (event.pointerId !== inspectPointerId) return;
+        inspectDragging = false;
+        inspectPointerId = null;
+        if (elInspectViewport.hasPointerCapture(event.pointerId)) {
+            elInspectViewport.releasePointerCapture(event.pointerId);
+        }
+    };
+
+    elInspectViewport.addEventListener("pointerdown", (event) => {
+        inspectDragging = true;
+        inspectPointerId = event.pointerId;
+        inspectDragX = event.clientX;
+        inspectDragY = event.clientY;
+        elInspectViewport.setPointerCapture(event.pointerId);
+    });
+
+    elInspectViewport.addEventListener("pointermove", onPointerMove);
+    elInspectViewport.addEventListener("pointerup", onPointerUp);
+    elInspectViewport.addEventListener("pointercancel", onPointerUp);
+    elInspectViewport.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        inspectDistance = Math.max(2.7, Math.min(5.4, inspectDistance + event.deltaY * 0.003));
+        renderInspectFrame(performance.now());
+    }, { passive: false });
+
+    if (elInspectLeftBtn) {
+        elInspectLeftBtn.addEventListener("click", () => {
+            inspectRotationY -= Math.PI / 5;
+            renderInspectFrame(performance.now());
+        });
+    }
+
+    if (elInspectResetBtn) {
+        elInspectResetBtn.addEventListener("click", () => {
+            resetInspectPose();
+            renderInspectFrame(performance.now());
+        });
+    }
+
+    if (elInspectRightBtn) {
+        elInspectRightBtn.addEventListener("click", () => {
+            inspectRotationY += Math.PI / 5;
+            renderInspectFrame(performance.now());
+        });
+    }
+}
+
 function renderLevelSelect() {
     elLevelSelect.innerHTML = "";
 
@@ -606,10 +715,14 @@ function renderLevelSelect() {
 function openShop() {
     renderShop();
     elShopPanel.classList.remove("hidden");
+    ensureInspectViewer();
+    setInspectSkin(state.selectedSkinP1);
+    startInspectLoop();
 }
 
 function closeShop() {
     elShopPanel.classList.add("hidden");
+    stopInspectLoop();
 }
 
 function buySkin(id, playerKey) {
@@ -756,7 +869,6 @@ function renderCharacterPreview(skin) {
 
     return `
         <div class="character-preview bunny" style="${baseStyle}">
-            <div class="character-aura"></div>
             <div class="character-ear left"></div>
             <div class="character-ear right"></div>
             <div class="character-ear-inner left"></div>
@@ -789,7 +901,12 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
             <div class="shop-item-price">${owned ? "OWNED" : `${item.price} COINS`}</div>
             <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
         `;
-        card.querySelector("button").addEventListener("click", () => buySkin(item.id, playerKey));
+        card.addEventListener("click", () => setInspectSkin(item.id));
+        card.querySelector("button").addEventListener("click", (event) => {
+            event.stopPropagation();
+            buySkin(item.id, playerKey);
+            setInspectSkin(item.id);
+        });
         targetEl.appendChild(card);
     });
 }
@@ -818,6 +935,108 @@ function renderShop() {
     renderSkinGrid(elSkinShopP1, state.selectedSkinP1, "p1");
     renderSkinGrid(elSkinShopP2, state.selectedSkinP2, "p2");
     renderPowerupInfo();
+}
+
+function ensureInspectViewer() {
+    if (inspectRenderer || !elInspectViewport) return;
+
+    inspectScene = new THREE.Scene();
+    inspectScene.background = null;
+
+    inspectCamera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    inspectCamera.position.set(0, 1.1, 3.9);
+    inspectCamera.lookAt(0, 0.7, 0);
+
+    inspectRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    inspectRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    inspectRenderer.shadowMap.enabled = true;
+    inspectRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    elInspectViewport.innerHTML = "";
+    elInspectViewport.appendChild(inspectRenderer.domElement);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.92);
+    inspectScene.add(ambient);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.15);
+    keyLight.position.set(3.6, 5.4, 3.8);
+    inspectScene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x7cecff, 0.72);
+    rimLight.position.set(-3.2, 2.5, -3.8);
+    inspectScene.add(rimLight);
+
+    resizeInspectViewer();
+    window.addEventListener("resize", resizeInspectViewer);
+}
+
+function resizeInspectViewer() {
+    if (!inspectRenderer || !elInspectViewport) return;
+    const width = Math.max(180, elInspectViewport.clientWidth);
+    const height = Math.max(180, elInspectViewport.clientHeight);
+    inspectRenderer.setSize(width, height, false);
+    inspectCamera.aspect = width / height;
+    inspectCamera.updateProjectionMatrix();
+}
+
+function setInspectSkin(skinId) {
+    ensureInspectViewer();
+    const skin = getSkinById(skinId);
+
+    if (inspectMesh) {
+        inspectScene.remove(inspectMesh);
+        inspectMesh = null;
+    }
+
+    inspectMesh = createPlayerMesh(skinId);
+    scene.remove(inspectMesh);
+    inspectMesh.position.set(0, -0.08, 0);
+    inspectMesh.rotation.set(0, 0, 0);
+    inspectMesh.scale.setScalar(1.52);
+    inspectScene.add(inspectMesh);
+
+    resetInspectPose();
+
+    elInspectName.textContent = skin.name;
+    elInspectMeta.textContent = `${skin.species.toUpperCase()} • DRAG / SCROLL / RESET`;
+    renderInspectFrame(performance.now());
+}
+
+function renderInspectFrame(now) {
+    if (!inspectRenderer || !inspectScene || !inspectCamera || !inspectMesh) return;
+    resizeInspectViewer();
+
+    const t = now * 0.0014;
+    if (!inspectDragging) inspectRotationY += 0.004;
+
+    inspectCamera.position.set(0, 1.1, inspectDistance);
+    inspectCamera.lookAt(0, 0.7, 0);
+    inspectMesh.rotation.y = inspectRotationY;
+    inspectMesh.rotation.x = inspectRotationX;
+    inspectMesh.position.y = -0.03 + Math.sin(t * 1.6) * 0.05;
+    updateMeshPresentation(inspectMesh, t, 1.35);
+
+    inspectRenderer.render(inspectScene, inspectCamera);
+}
+
+function inspectLoop(now) {
+    if (!elShopPanel || elShopPanel.classList.contains("hidden")) {
+        inspectAnimationId = null;
+        return;
+    }
+    inspectLastTime = now;
+    renderInspectFrame(now);
+    inspectAnimationId = requestAnimationFrame(inspectLoop);
+}
+
+function startInspectLoop() {
+    if (inspectAnimationId) return;
+    inspectAnimationId = requestAnimationFrame(inspectLoop);
+}
+
+function stopInspectLoop() {
+    if (!inspectAnimationId) return;
+    cancelAnimationFrame(inspectAnimationId);
+    inspectAnimationId = null;
 }
 
 function updateMenuButtons() {
@@ -1047,10 +1266,10 @@ function createPlayerMesh(skinId) {
     } else {
         addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.5, 0);
         addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.34, 0.32);
-        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, -0.2, 1.05, -0.03, 0, 0, -0.08), "ear", 2.4, -0.1);
-        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, 0.2, 1.05, -0.03, 0, 0, 0.08), "ear", 2.4, 0.1);
-        addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, -0.2, 1.07, 0.04, 0, 0, -0.08);
-        addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, 0.2, 1.07, 0.04, 0, 0, 0.08);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.06, 0.28, 4, 8), baseMat, -0.2, 1.06, -0.01, 0, 0, -0.12), "ear", 2.4, -0.1);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.06, 0.28, 4, 8), baseMat, 0.2, 1.06, -0.01, 0, 0, 0.12), "ear", 2.4, 0.1);
+        addPart(group, new THREE.CapsuleGeometry(0.03, 0.16, 4, 8), innerMat, -0.2, 1.07, 0.05, 0, 0, -0.12);
+        addPart(group, new THREE.CapsuleGeometry(0.03, 0.16, 4, 8), innerMat, 0.2, 1.07, 0.05, 0, 0, 0.12);
         addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, -0.25, 0.44, 0.35);
         addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, 0.25, 0.44, 0.35);
         addPart(group, new THREE.SphereGeometry(0.06, 10, 10), accentMat, 0, 0.34, 0.43);
@@ -1063,7 +1282,6 @@ function createPlayerMesh(skinId) {
     leftEye.receiveShadow = false;
     rightEye.receiveShadow = false;
 
-    const foreheadGem = addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, 0.9, 0.34, 0.3, 0, 0.2);
     group.userData = {
         skin,
         glowMaterials: [
@@ -1072,8 +1290,7 @@ function createPlayerMesh(skinId) {
             { material: innerMat, base: 0.18 },
             { material: glowMat, base: 0.9 }
         ],
-        animatedParts,
-        foreheadGem
+        animatedParts
     };
 
     scene.add(group);
@@ -1566,21 +1783,8 @@ function updatePlayers(dtScale) {
         mesh.rotation.x = player.flyTimer > 0 ? -0.08 : player.isJumping ? -0.18 : 0;
         mesh.rotation.z = (player.currentLaneX - prevX) * -0.7;
 
-        if (mesh.userData.foreheadGem) {
-            mesh.userData.foreheadGem.rotation.y += 0.03 * dtScale;
-        }
         if (mesh.userData.animatedParts) {
-            mesh.userData.animatedParts.forEach((part, partIndex) => {
-                const wave = Math.sin(now * part.speed + part.phase + partIndex * 0.5) * part.amplitude;
-                if (part.axis === "x") part.mesh.rotation.x = part.baseRotation.x + wave;
-                else if (part.axis === "y") part.mesh.rotation.y = part.baseRotation.y + wave;
-                else part.mesh.rotation.z = part.baseRotation.z + wave;
-            });
-        }
-        if (mesh.userData.glowMaterials) {
-            mesh.userData.glowMaterials.forEach((entry) => {
-                entry.material.emissiveIntensity = entry.base * (0.82 + 0.25 * Math.sin(now * 2.2 + index));
-            });
+            updateMeshPresentation(mesh, now, 1, { highlightColor: getPowerColor(player) });
         }
 
         const trailColor = getPowerColor(player);

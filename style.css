@@ -357,6 +357,90 @@ button:disabled {
     font-size: 1.1rem;
 }
 
+.inspect-viewer {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    border-radius: 18px;
+    background:
+        radial-gradient(circle at top left, rgba(255, 209, 102, 0.18), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(124, 236, 255, 0.14), transparent 36%),
+        rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inspect-copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    text-align: left;
+}
+
+.inspect-name {
+    font-size: 2rem;
+    color: #fff;
+    line-height: 0.95;
+}
+
+.inspect-meta {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.78);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.inspect-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.25rem;
+}
+
+.inspect-btn {
+    min-width: 74px;
+    padding: 0.45rem 0.7rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(214, 220, 228, 0.94));
+    box-shadow: 0 4px 0 #8b93a1, 0 10px 16px rgba(0, 0, 0, 0.15);
+}
+
+.inspect-btn:active {
+    box-shadow: 0 1px 0 #8b93a1, 0 6px 10px rgba(0, 0, 0, 0.12);
+}
+
+.inspect-btn-accent {
+    background: linear-gradient(180deg, #ffd166 0%, #f3b93d 100%);
+    box-shadow: 0 4px 0 #b88419, 0 10px 16px rgba(0, 0, 0, 0.16);
+}
+
+.inspect-viewport {
+    min-height: 240px;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: grab;
+    background:
+        radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 50% 100%, rgba(124, 236, 255, 0.15), transparent 48%),
+        linear-gradient(180deg, rgba(19, 22, 31, 0.95), rgba(11, 13, 20, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.inspect-viewport:active {
+    cursor: grabbing;
+}
+
+.inspect-viewport canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
 .shop-section + .shop-section {
     margin-top: 1rem;
 }
@@ -379,6 +463,13 @@ button:disabled {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
     border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
+    transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.shop-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
 }
 
 .shop-preview {
@@ -1149,6 +1240,27 @@ button:disabled {
     .center-screen {
         width: min(94vw, 500px);
         padding: 1.2rem 0.9rem;
+    }
+
+    .inspect-viewer {
+        grid-template-columns: 1fr;
+    }
+
+    .inspect-copy {
+        text-align: center;
+    }
+
+    .inspect-controls {
+        justify-content: flex-start;
+    }
+
+    .inspect-btn {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .inspect-viewport {
+        min-height: 210px;
     }
 
     .main-btn {
