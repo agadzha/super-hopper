@@ -558,9 +558,6 @@ function updatePowerupStatus() {
     const items = [];
 
     state.players.forEach((player, index) => {
-        if (player.shieldTimer > 0 && player.shieldHits > 0) {
-            items.push(`<div class="powerup-pill shield"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">SHIELD</span><span class="powerup-time">${formatTimer(player.shieldTimer)}</span></div>`);
-        }
         if (player.flyTimer > 0) {
             items.push(`<div class="powerup-pill fly"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">FLY</span><span class="powerup-time">${formatTimer(player.flyTimer)}</span></div>`);
         }
@@ -965,26 +962,17 @@ function createPlayerMesh(skinId) {
         flatShading: true
     });
     const darkMat = new THREE.MeshBasicMaterial({ color: skin.eyeColor });
-    const auraMat = new THREE.MeshStandardMaterial({
-        color: skin.glowColor,
-        emissive: skin.glowColor,
-        emissiveIntensity: 0.5,
-        transparent: true,
-        opacity: 0.1
-    });
-
     let leftEye;
     let rightEye;
 
     if (skin.species === "gorilla") {
-        addPart(group, new THREE.BoxGeometry(1.02, 0.9, 0.88), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.5, 0.34, 0.1), bellyMat, 0, 0.35, 0.42);
-        addPart(group, new THREE.BoxGeometry(0.2, 0.58, 0.18), baseMat, -0.36, 0.48, 0, 0, 0, 0.14);
-        addPart(group, new THREE.BoxGeometry(0.2, 0.58, 0.18), baseMat, 0.36, 0.48, 0, 0, 0, -0.14);
-        addPart(group, new THREE.BoxGeometry(0.68, 0.42, 0.52), accentMat, 0, 0.88, 0.06);
-        addPart(group, new THREE.BoxGeometry(0.42, 0.18, 0.18), bellyMat, 0, 0.73, 0.38);
-        addPart(group, new THREE.BoxGeometry(0.12, 0.12, 0.1), baseMat, -0.26, 1.05, 0);
-        addPart(group, new THREE.BoxGeometry(0.12, 0.12, 0.1), baseMat, 0.26, 1.05, 0);
+        addPart(group, new THREE.SphereGeometry(0.55, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.34, 18, 18), accentMat, 0, 0.93, 0.06);
+        addPart(group, new THREE.SphereGeometry(0.22, 16, 16), bellyMat, 0, 0.8, 0.3);
+        addPart(group, new THREE.CapsuleGeometry(0.12, 0.34, 4, 8), baseMat, -0.42, 0.45, 0, 0, 0, 0.3);
+        addPart(group, new THREE.CapsuleGeometry(0.12, 0.34, 4, 8), baseMat, 0.42, 0.45, 0, 0, 0, -0.3);
+        addPart(group, new THREE.SphereGeometry(0.09, 12, 12), baseMat, -0.22, 1.1, 0.02);
+        addPart(group, new THREE.SphereGeometry(0.09, 12, 12), baseMat, 0.22, 1.1, 0.02);
         leftEye = addPart(group, new THREE.BoxGeometry(0.06, 0.08, 0.04), darkMat, -0.12, 0.9, 0.33);
         rightEye = addPart(group, new THREE.BoxGeometry(0.06, 0.08, 0.04), darkMat, 0.12, 0.9, 0.33);
     } else if (skin.species === "chicken") {
@@ -1010,40 +998,38 @@ function createPlayerMesh(skinId) {
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.09, 0.96, 0.28);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.09, 0.96, 0.28);
     } else if (skin.species === "pig") {
-        addPart(group, new THREE.BoxGeometry(0.96, 0.82, 0.86), baseMat, 0, 0.52, 0);
-        addPart(group, new THREE.BoxGeometry(0.46, 0.3, 0.1), bellyMat, 0, 0.35, 0.42);
-        addPart(group, new THREE.BoxGeometry(0.14, 0.28, 0.12), baseMat, -0.22, 1.03, 0.05, 0, 0, -0.3);
-        addPart(group, new THREE.BoxGeometry(0.14, 0.28, 0.12), baseMat, 0.22, 1.03, 0.05, 0, 0, 0.3);
-        addPart(group, new THREE.BoxGeometry(0.28, 0.16, 0.16), accentMat, 0, 0.52, 0.42);
+        addPart(group, new THREE.SphereGeometry(0.54, 18, 18), baseMat, 0, 0.54, 0);
+        addPart(group, new THREE.SphereGeometry(0.26, 16, 16), accentMat, 0, 0.5, 0.36);
+        addPart(group, new THREE.SphereGeometry(0.1, 12, 12), baseMat, -0.22, 1.03, 0.06);
+        addPart(group, new THREE.SphereGeometry(0.1, 12, 12), baseMat, 0.22, 1.03, 0.06);
         addPart(group, new THREE.CylinderGeometry(0.04, 0.04, 0.08, 10), innerMat, -0.06, 0.52, 0.51, Math.PI / 2, 0, 0);
         addPart(group, new THREE.CylinderGeometry(0.04, 0.04, 0.08, 10), innerMat, 0.06, 0.52, 0.51, Math.PI / 2, 0, 0);
         addAnimatedPart(addPart(group, new THREE.TorusGeometry(0.07, 0.02, 6, 14), glowMat, 0, 0.18, -0.4, 0, Math.PI / 2, 0.4), "tail", 2.8, 0.5, "y");
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.14, 0.7, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.14, 0.7, 0.41);
     } else if (skin.species === "fox") {
-        addPart(group, new THREE.BoxGeometry(0.92, 0.82, 0.8), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.4, 0.28, 0.08), bellyMat, 0, 0.33, 0.4);
-        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.34, 0.12), baseMat, -0.23, 1.02, 0.02, 0, 0, -0.38), "ear", 2.2, -0.12);
-        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.34, 0.12), baseMat, 0.23, 1.02, 0.02, 0, 0, 0.38), "ear", 2.2, 0.12);
-        addPart(group, new THREE.BoxGeometry(0.08, 0.18, 0.05), innerMat, -0.23, 1.0, 0.08, 0, 0, -0.3);
-        addPart(group, new THREE.BoxGeometry(0.08, 0.18, 0.05), innerMat, 0.23, 1.0, 0.08, 0, 0, 0.3);
-        addPart(group, new THREE.BoxGeometry(0.26, 0.14, 0.22), accentMat, 0, 0.6, 0.42);
-        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.22, 0.22, 0.52), glowMat, 0, 0.42, -0.52, 0.2, 0, 0.5), "tail", 2.1, 0.24, "y");
+        addPart(group, new THREE.CapsuleGeometry(0.28, 0.3, 6, 10), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.22, 16, 16), accentMat, 0, 0.6, 0.33);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.12, 0.28, 4), baseMat, -0.23, 1.04, 0.02, 0, 0, -0.32), "ear", 2.2, -0.12);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.12, 0.28, 4), baseMat, 0.23, 1.04, 0.02, 0, 0, 0.32), "ear", 2.2, 0.12);
+        addPart(group, new THREE.ConeGeometry(0.06, 0.16, 4), innerMat, -0.23, 1.02, 0.08, 0, 0, -0.25);
+        addPart(group, new THREE.ConeGeometry(0.06, 0.16, 4), innerMat, 0.23, 1.02, 0.08, 0, 0, 0.25);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.11, 0.34, 4, 8), glowMat, 0, 0.45, -0.56, 0.2, 0, 0.5), "tail", 2.1, 0.24, "y");
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.7, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.7, 0.41);
     } else if (skin.species === "cat") {
-        addPart(group, new THREE.BoxGeometry(0.9, 0.82, 0.8), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.36, 0.26, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.CapsuleGeometry(0.28, 0.28, 6, 10), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.36, 0.31);
         addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.11, 0.26, 4), baseMat, -0.21, 1.08, 0.03, 0, 0, -0.1), "ear", 2.5, -0.1);
         addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.11, 0.26, 4), baseMat, 0.21, 1.08, 0.03, 0, 0, 0.1), "ear", 2.5, 0.1);
         addPart(group, new THREE.ConeGeometry(0.05, 0.16, 4), innerMat, -0.21, 1.05, 0.08, 0, 0, -0.1);
         addPart(group, new THREE.ConeGeometry(0.05, 0.16, 4), innerMat, 0.21, 1.05, 0.08, 0, 0, 0.1);
-        addAnimatedPart(addPart(group, new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8), glowMat, 0, 0.52, -0.5, 1.1, 0, 0.5), "tail", 2.4, 0.22, "y");
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.04, 0.34, 4, 8), glowMat, 0, 0.52, -0.5, 1.1, 0, 0.5), "tail", 2.4, 0.22, "y");
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, -0.14, 0.68, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, 0.14, 0.68, 0.41);
     } else if (skin.species === "panda") {
-        addPart(group, new THREE.BoxGeometry(0.94, 0.84, 0.82), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.35, 0.31);
         addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, -0.22, 1.02, 0.02);
         addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, 0.22, 1.02, 0.02);
         addPart(group, new THREE.SphereGeometry(0.12, 10, 10), accentMat, -0.15, 0.67, 0.38);
@@ -1051,16 +1037,16 @@ function createPlayerMesh(skinId) {
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.15, 0.68, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.15, 0.68, 0.41);
     } else if (skin.species === "bear") {
-        addPart(group, new THREE.BoxGeometry(1.0, 0.9, 0.86), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.42, 0.32, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.SphereGeometry(0.54, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.22, 16, 16), bellyMat, 0, 0.34, 0.33);
         addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, -0.23, 1.0, 0.02);
         addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, 0.23, 1.0, 0.02);
-        addPart(group, new THREE.BoxGeometry(0.3, 0.16, 0.18), accentMat, 0, 0.56, 0.42);
+        addPart(group, new THREE.SphereGeometry(0.17, 16, 16), accentMat, 0, 0.56, 0.34);
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.72, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.72, 0.41);
     } else {
-        addPart(group, new THREE.BoxGeometry(0.92, 0.92, 0.82), baseMat, 0, 0.5, 0);
-        addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.34, 0.32);
         addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, -0.2, 1.05, -0.03, 0, 0, -0.08), "ear", 2.4, -0.1);
         addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, 0.2, 1.05, -0.03, 0, 0, 0.08), "ear", 2.4, 0.1);
         addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, -0.2, 1.07, 0.04, 0, 0, -0.08);
@@ -1078,10 +1064,6 @@ function createPlayerMesh(skinId) {
     rightEye.receiveShadow = false;
 
     const foreheadGem = addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, 0.9, 0.34, 0.3, 0, 0.2);
-    const aura = addPart(group, new THREE.SphereGeometry(0.95, 16, 16), auraMat, 0, 0.5, 0);
-
-    aura.castShadow = false;
-
     group.userData = {
         skin,
         glowMaterials: [
@@ -1091,7 +1073,6 @@ function createPlayerMesh(skinId) {
             { material: glowMat, base: 0.9 }
         ],
         animatedParts,
-        aura,
         foreheadGem
     };
 
@@ -1595,11 +1576,6 @@ function updatePlayers(dtScale) {
                 else if (part.axis === "y") part.mesh.rotation.y = part.baseRotation.y + wave;
                 else part.mesh.rotation.z = part.baseRotation.z + wave;
             });
-        }
-        if (mesh.userData.aura) {
-            mesh.userData.aura.material.opacity = player.flyTimer > 0 ? 0.14 : 0.08;
-            mesh.userData.aura.material.color.setHex(getPowerColor(player));
-            mesh.userData.aura.material.emissive.setHex(getPowerColor(player));
         }
         if (mesh.userData.glowMaterials) {
             mesh.userData.glowMaterials.forEach((entry) => {
