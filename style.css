@@ -266,6 +266,10 @@ button:disabled {
     background: #ffd166;
 }
 
+.powerup-pill.shield .powerup-tag {
+    background: #74f7b8;
+}
+
 .powerup-time {
     color: #fff;
     opacity: 0.88;
@@ -533,6 +537,469 @@ button:disabled {
     box-shadow: 0 0 12px var(--skin-glow);
 }
 
+.character-species {
+    position: absolute;
+    left: 50%;
+    bottom: -9px;
+    transform: translateX(-50%);
+    padding: 0.08rem 0.35rem;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+}
+
+.preview-eye {
+    position: absolute;
+    width: 5px;
+    height: 7px;
+    background: #101010;
+    border-radius: 4px;
+}
+
+.preview-eye.left {
+    left: 28px;
+}
+
+.preview-eye.right {
+    right: 28px;
+}
+
+.preview-tail,
+.preview-fox-tail,
+.preview-cat-tail {
+    position: absolute;
+    border-radius: 999px;
+}
+
+.character-preview.gorilla .character-aura,
+.character-preview.chicken .character-aura,
+.character-preview.duck .character-aura,
+.character-preview.pig .character-aura,
+.character-preview.fox .character-aura,
+.character-preview.cat .character-aura,
+.character-preview.panda .character-aura,
+.character-preview.bear .character-aura,
+.character-preview.gorilla .character-ear,
+.character-preview.gorilla .character-ear-inner,
+.character-preview.gorilla .character-head,
+.character-preview.gorilla .character-belly,
+.character-preview.gorilla .character-cheek,
+.character-preview.gorilla .character-eye,
+.character-preview.gorilla .character-nose,
+.character-preview.gorilla .character-gem,
+.character-preview.chicken .character-ear,
+.character-preview.chicken .character-ear-inner,
+.character-preview.chicken .character-head,
+.character-preview.chicken .character-belly,
+.character-preview.chicken .character-cheek,
+.character-preview.chicken .character-eye,
+.character-preview.chicken .character-nose,
+.character-preview.chicken .character-gem,
+.character-preview.duck .character-ear,
+.character-preview.duck .character-ear-inner,
+.character-preview.duck .character-head,
+.character-preview.duck .character-belly,
+.character-preview.duck .character-cheek,
+.character-preview.duck .character-eye,
+.character-preview.duck .character-nose,
+.character-preview.duck .character-gem,
+.character-preview.pig .character-ear,
+.character-preview.pig .character-ear-inner,
+.character-preview.pig .character-head,
+.character-preview.pig .character-belly,
+.character-preview.pig .character-cheek,
+.character-preview.pig .character-eye,
+.character-preview.pig .character-nose,
+.character-preview.pig .character-gem,
+.character-preview.fox .character-ear,
+.character-preview.fox .character-ear-inner,
+.character-preview.fox .character-head,
+.character-preview.fox .character-belly,
+.character-preview.fox .character-cheek,
+.character-preview.fox .character-eye,
+.character-preview.fox .character-nose,
+.character-preview.fox .character-gem,
+.character-preview.cat .character-ear,
+.character-preview.cat .character-ear-inner,
+.character-preview.cat .character-head,
+.character-preview.cat .character-belly,
+.character-preview.cat .character-cheek,
+.character-preview.cat .character-eye,
+.character-preview.cat .character-nose,
+.character-preview.cat .character-gem,
+.character-preview.panda .character-ear,
+.character-preview.panda .character-ear-inner,
+.character-preview.panda .character-head,
+.character-preview.panda .character-belly,
+.character-preview.panda .character-cheek,
+.character-preview.panda .character-eye,
+.character-preview.panda .character-nose,
+.character-preview.panda .character-gem,
+.character-preview.bear .character-ear,
+.character-preview.bear .character-ear-inner,
+.character-preview.bear .character-head,
+.character-preview.bear .character-belly,
+.character-preview.bear .character-cheek,
+.character-preview.bear .character-eye,
+.character-preview.bear .character-nose,
+.character-preview.bear .character-gem {
+    display: none;
+}
+
+.preview-gorilla-head,
+.preview-gorilla-body,
+.preview-gorilla-arm,
+.preview-gorilla-muzzle,
+.preview-bird-body,
+.preview-bird-head,
+.preview-crest,
+.preview-wing,
+.preview-beak,
+.preview-pig-body,
+.preview-pig-ear,
+.preview-pig-snout,
+.preview-fox-body,
+.preview-fox-ear,
+.preview-fox-muzzle,
+.preview-cat-body,
+.preview-cat-ear,
+.preview-panda-body,
+.preview-panda-ear,
+.preview-panda-patch,
+.preview-bear-body,
+.preview-bear-ear,
+.preview-bear-muzzle,
+.preview-nose {
+    position: absolute;
+}
+
+.character-preview.gorilla .preview-gorilla-body {
+    left: 50%;
+    bottom: 12px;
+    width: 56px;
+    height: 38px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 14px;
+}
+
+.character-preview.gorilla .preview-gorilla-head {
+    left: 50%;
+    bottom: 32px;
+    width: 44px;
+    height: 28px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    border-radius: 14px;
+}
+
+.character-preview.gorilla .preview-gorilla-arm {
+    bottom: 16px;
+    width: 12px;
+    height: 28px;
+    background: var(--skin-base);
+    border-radius: 10px;
+}
+
+.character-preview.gorilla .preview-gorilla-arm.left {
+    left: 10px;
+    transform: rotate(12deg);
+}
+
+.character-preview.gorilla .preview-gorilla-arm.right {
+    right: 10px;
+    transform: rotate(-12deg);
+}
+
+.character-preview.gorilla .preview-gorilla-muzzle {
+    left: 50%;
+    bottom: 34px;
+    width: 24px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.gorilla .preview-eye {
+    bottom: 42px;
+}
+
+.character-preview.chicken .preview-bird-body,
+.character-preview.duck .preview-bird-body {
+    left: 50%;
+    bottom: 12px;
+    width: 44px;
+    height: 38px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 999px;
+}
+
+.character-preview.chicken .preview-bird-head,
+.character-preview.duck .preview-bird-head {
+    left: 50%;
+    bottom: 38px;
+    width: 24px;
+    height: 24px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 999px;
+}
+
+.character-preview.chicken .preview-wing,
+.character-preview.duck .preview-wing {
+    bottom: 22px;
+    width: 14px;
+    height: 22px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.chicken .preview-wing.left,
+.character-preview.duck .preview-wing.left {
+    left: 14px;
+    transform: rotate(24deg);
+}
+
+.character-preview.chicken .preview-wing.right,
+.character-preview.duck .preview-wing.right {
+    right: 14px;
+    transform: rotate(-24deg);
+}
+
+.character-preview.chicken .preview-crest {
+    left: 50%;
+    bottom: 54px;
+    width: 18px;
+    height: 10px;
+    transform: translateX(-50%);
+    background: var(--skin-inner);
+    clip-path: polygon(0% 100%, 20% 20%, 45% 100%, 60% 0%, 80% 100%, 100% 30%, 100% 100%);
+}
+
+.character-preview.chicken .preview-beak,
+.character-preview.duck .preview-beak {
+    left: 50%;
+    bottom: 42px;
+    width: 14px;
+    height: 8px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    border-radius: 8px;
+}
+
+.character-preview.duck .preview-beak.wide {
+    width: 18px;
+    height: 10px;
+}
+
+.character-preview.chicken .preview-eye,
+.character-preview.duck .preview-eye {
+    bottom: 47px;
+}
+
+.character-preview.chicken .preview-eye.left,
+.character-preview.duck .preview-eye.left {
+    left: 29px;
+}
+
+.character-preview.chicken .preview-eye.right,
+.character-preview.duck .preview-eye.right {
+    right: 29px;
+}
+
+.character-preview.pig .preview-pig-body {
+    left: 50%;
+    bottom: 12px;
+    width: 52px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 18px;
+}
+
+.character-preview.pig .preview-pig-ear {
+    top: 12px;
+    width: 12px;
+    height: 18px;
+    background: var(--skin-inner);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.character-preview.pig .preview-pig-ear.left {
+    left: 18px;
+}
+
+.character-preview.pig .preview-pig-ear.right {
+    right: 18px;
+}
+
+.character-preview.pig .preview-pig-snout {
+    left: 50%;
+    bottom: 24px;
+    width: 20px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.pig .preview-eye {
+    bottom: 34px;
+}
+
+.character-preview.pig .preview-tail {
+    right: 8px;
+    bottom: 22px;
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--skin-glow);
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    transform: rotate(30deg);
+}
+
+.character-preview.fox .preview-fox-body,
+.character-preview.cat .preview-cat-body,
+.character-preview.bear .preview-bear-body,
+.character-preview.panda .preview-panda-body {
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+}
+
+.character-preview.fox .preview-fox-body {
+    width: 50px;
+    height: 38px;
+    border-radius: 16px;
+}
+
+.character-preview.fox .preview-fox-ear,
+.character-preview.cat .preview-cat-ear {
+    top: 8px;
+    width: 13px;
+    height: 18px;
+    background: var(--skin-base);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.character-preview.fox .preview-fox-ear.left,
+.character-preview.cat .preview-cat-ear.left {
+    left: 18px;
+}
+
+.character-preview.fox .preview-fox-ear.right,
+.character-preview.cat .preview-cat-ear.right {
+    right: 18px;
+}
+
+.character-preview.fox .preview-fox-muzzle,
+.character-preview.bear .preview-bear-muzzle {
+    left: 50%;
+    bottom: 22px;
+    width: 22px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.fox .preview-tail.fluffy {
+    right: 6px;
+    bottom: 16px;
+    width: 18px;
+    height: 32px;
+    background: var(--skin-glow);
+    border-radius: 999px 999px 8px 8px;
+    transform: rotate(26deg);
+}
+
+.character-preview.fox .preview-eye,
+.character-preview.cat .preview-eye,
+.character-preview.bear .preview-eye,
+.character-preview.panda .preview-eye {
+    bottom: 33px;
+}
+
+.character-preview.cat .preview-cat-body {
+    width: 48px;
+    height: 38px;
+    border-radius: 16px;
+}
+
+.character-preview.cat .preview-tail.slim {
+    right: 10px;
+    bottom: 14px;
+    width: 8px;
+    height: 28px;
+    background: var(--skin-glow);
+    border-radius: 999px;
+    transform: rotate(22deg);
+}
+
+.character-preview.cat .preview-nose.small,
+.character-preview.panda .preview-nose {
+    left: 50%;
+    bottom: 23px;
+    width: 8px;
+    height: 6px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.panda .preview-panda-body {
+    width: 50px;
+    height: 38px;
+    border-radius: 18px;
+}
+
+.character-preview.panda .preview-panda-ear,
+.character-preview.bear .preview-bear-ear {
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.panda .preview-panda-ear.left,
+.character-preview.bear .preview-bear-ear.left {
+    left: 18px;
+}
+
+.character-preview.panda .preview-panda-ear.right,
+.character-preview.bear .preview-bear-ear.right {
+    right: 18px;
+}
+
+.character-preview.panda .preview-panda-patch {
+    bottom: 30px;
+    width: 14px;
+    height: 16px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.panda .preview-panda-patch.left {
+    left: 20px;
+}
+
+.character-preview.panda .preview-panda-patch.right {
+    right: 20px;
+}
+
+.character-preview.bear .preview-bear-body {
+    width: 54px;
+    height: 40px;
+    border-radius: 18px;
+}
+
 .boost-preview {
     position: relative;
     width: 74px;
@@ -576,6 +1043,11 @@ button:disabled {
 .boost-preview.magnet {
     background: radial-gradient(circle, #fff0c4, #ffd166 70%);
     box-shadow: 0 0 22px rgba(255, 209, 102, 0.55);
+}
+
+.boost-preview.shield {
+    background: radial-gradient(circle, #dcfff0, #74f7b8 70%);
+    box-shadow: 0 0 22px rgba(116, 247, 184, 0.55);
 }
 
 .shop-item-name {

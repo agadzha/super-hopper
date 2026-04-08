@@ -55,6 +55,15 @@ const POWERUP_TYPES = {
         accent: 0xfff4cc,
         label: "MAG",
         description: "Magnet coins for 10s."
+    },
+    shield: {
+        id: "shield",
+        name: "1 Hit Shield",
+        duration: 20,
+        color: 0x74f7b8,
+        accent: 0xe7fff2,
+        label: "SHD",
+        description: "Blocks 1 death for 20s."
     }
 };
 
@@ -102,6 +111,7 @@ const SHOP_DATA = {
             id: "sky-bunny",
             name: "Sky Bunny",
             price: 0,
+            species: "bunny",
             baseColor: 0x8ad5ff,
             accentColor: 0xffffff,
             innerEarColor: 0xffc4de,
@@ -113,6 +123,7 @@ const SHOP_DATA = {
             id: "sunset-bunny",
             name: "Sunset Bunny",
             price: 0,
+            species: "bunny",
             baseColor: 0xffb08b,
             accentColor: 0xfff0be,
             innerEarColor: 0xff8eb8,
@@ -121,9 +132,106 @@ const SHOP_DATA = {
             eyeColor: 0x3a1d18
         },
         {
+            id: "gorilla-king",
+            name: "Gorilla King",
+            price: 110,
+            species: "gorilla",
+            baseColor: 0x585a62,
+            accentColor: 0x9aa1ad,
+            innerEarColor: 0x7f8794,
+            glowColor: 0x8dc7ff,
+            bellyColor: 0xcfd5df,
+            eyeColor: 0x16181d
+        },
+        {
+            id: "chicken-star",
+            name: "Chicken Star",
+            price: 150,
+            species: "chicken",
+            baseColor: 0xfff6df,
+            accentColor: 0xffc52b,
+            innerEarColor: 0xff6c5c,
+            glowColor: 0xffe28a,
+            bellyColor: 0xffffff,
+            eyeColor: 0x211a12
+        },
+        {
+            id: "duck-wave",
+            name: "Duck Wave",
+            price: 170,
+            species: "duck",
+            baseColor: 0xfff15e,
+            accentColor: 0xff9f45,
+            innerEarColor: 0xffd77a,
+            glowColor: 0x86fff0,
+            bellyColor: 0xfff8b2,
+            eyeColor: 0x26343f
+        },
+        {
+            id: "pig-pop",
+            name: "Pig Pop",
+            price: 185,
+            species: "pig",
+            baseColor: 0xffb4cd,
+            accentColor: 0xff88b7,
+            innerEarColor: 0xff77af,
+            glowColor: 0xffa8dc,
+            bellyColor: 0xffd4e7,
+            eyeColor: 0x4b2941
+        },
+        {
+            id: "fox-flare",
+            name: "Fox Flare",
+            price: 210,
+            species: "fox",
+            baseColor: 0xff8f45,
+            accentColor: 0xfff0d8,
+            innerEarColor: 0xffd0a2,
+            glowColor: 0xffb36c,
+            bellyColor: 0xfff7e8,
+            eyeColor: 0x382113
+        },
+        {
+            id: "cat-night",
+            name: "Cat Night",
+            price: 240,
+            species: "cat",
+            baseColor: 0x34384d,
+            accentColor: 0x93a1ff,
+            innerEarColor: 0xffb6d5,
+            glowColor: 0x8aa7ff,
+            bellyColor: 0xbec7f7,
+            eyeColor: 0xf4fbff
+        },
+        {
+            id: "panda-pop",
+            name: "Panda Pop",
+            price: 280,
+            species: "panda",
+            baseColor: 0xf5f5f5,
+            accentColor: 0x22252d,
+            innerEarColor: 0x9fa5b6,
+            glowColor: 0x9fe8ff,
+            bellyColor: 0xffffff,
+            eyeColor: 0x14161b
+        },
+        {
+            id: "bear-bronze",
+            name: "Bear Bronze",
+            price: 320,
+            species: "bear",
+            baseColor: 0x8d5d3d,
+            accentColor: 0xd5a071,
+            innerEarColor: 0xc48d66,
+            glowColor: 0xffc089,
+            bellyColor: 0xeed4b7,
+            eyeColor: 0x2f1c12
+        },
+        {
             id: "moon-bunny",
             name: "Moon Bunny",
             price: 90,
+            species: "bunny",
             baseColor: 0xf6f7ff,
             accentColor: 0xb7cbff,
             innerEarColor: 0xd4dbff,
@@ -135,6 +243,7 @@ const SHOP_DATA = {
             id: "sakura-bunny",
             name: "Sakura Bunny",
             price: 160,
+            species: "bunny",
             baseColor: 0xffb8d8,
             accentColor: 0xffffff,
             innerEarColor: 0xff78b5,
@@ -146,6 +255,7 @@ const SHOP_DATA = {
             id: "neon-bunny",
             name: "Neon Bunny",
             price: 260,
+            species: "bunny",
             baseColor: 0x1c2340,
             accentColor: 0x42ffc7,
             innerEarColor: 0x9b7cff,
@@ -157,6 +267,7 @@ const SHOP_DATA = {
             id: "royal-bunny",
             name: "Royal Bunny",
             price: 390,
+            species: "bunny",
             baseColor: 0xf3c74f,
             accentColor: 0xfff3c2,
             innerEarColor: 0xffdc7d,
@@ -252,6 +363,7 @@ function sanitizeOwnedSkins(owned) {
 }
 
 function getPowerColor(player) {
+    if (player.shieldTimer > 0 && player.shieldHits > 0) return POWERUP_TYPES.shield.color;
     if (player.flyTimer > 0) return POWERUP_TYPES.fly.color;
     if (player.magnetTimer > 0) return POWERUP_TYPES.magnet.color;
     if (player.jumpBoostTimer > 0) return POWERUP_TYPES.jump.color;
@@ -446,6 +558,9 @@ function updatePowerupStatus() {
     const items = [];
 
     state.players.forEach((player, index) => {
+        if (player.shieldTimer > 0 && player.shieldHits > 0) {
+            items.push(`<div class="powerup-pill shield"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">SHIELD</span><span class="powerup-time">${formatTimer(player.shieldTimer)}</span></div>`);
+        }
         if (player.flyTimer > 0) {
             items.push(`<div class="powerup-pill fly"><span class="powerup-owner">P${index + 1}</span><span class="powerup-tag">FLY</span><span class="powerup-time">${formatTimer(player.flyTimer)}</span></div>`);
         }
@@ -518,8 +633,132 @@ function buySkin(id, playerKey) {
 }
 
 function renderCharacterPreview(skin) {
+    const speciesLabel = skin.species ? skin.species.toUpperCase() : "SKIN";
+    const baseStyle = `--skin-base:${toCssColor(skin.baseColor)}; --skin-accent:${toCssColor(skin.accentColor)}; --skin-inner:${toCssColor(skin.innerEarColor)}; --skin-glow:${toCssColor(skin.glowColor)}; --skin-belly:${toCssColor(skin.bellyColor)};`;
+
+    if (skin.species === "gorilla") {
+        return `
+            <div class="character-preview gorilla" style="${baseStyle}">
+                <div class="preview-gorilla-head"></div>
+                <div class="preview-gorilla-body"></div>
+                <div class="preview-gorilla-arm left"></div>
+                <div class="preview-gorilla-arm right"></div>
+                <div class="preview-gorilla-muzzle"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "chicken") {
+        return `
+            <div class="character-preview chicken" style="${baseStyle}">
+                <div class="preview-bird-body"></div>
+                <div class="preview-bird-head"></div>
+                <div class="preview-crest"></div>
+                <div class="preview-wing left"></div>
+                <div class="preview-wing right"></div>
+                <div class="preview-beak"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "duck") {
+        return `
+            <div class="character-preview duck" style="${baseStyle}">
+                <div class="preview-bird-body"></div>
+                <div class="preview-bird-head"></div>
+                <div class="preview-wing left"></div>
+                <div class="preview-wing right"></div>
+                <div class="preview-beak wide"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "pig") {
+        return `
+            <div class="character-preview pig" style="${baseStyle}">
+                <div class="preview-pig-body"></div>
+                <div class="preview-pig-ear left"></div>
+                <div class="preview-pig-ear right"></div>
+                <div class="preview-pig-snout"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-tail"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "fox") {
+        return `
+            <div class="character-preview fox" style="${baseStyle}">
+                <div class="preview-fox-body"></div>
+                <div class="preview-fox-ear left"></div>
+                <div class="preview-fox-ear right"></div>
+                <div class="preview-fox-muzzle"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-tail fluffy"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "cat") {
+        return `
+            <div class="character-preview cat" style="${baseStyle}">
+                <div class="preview-cat-body"></div>
+                <div class="preview-cat-ear left"></div>
+                <div class="preview-cat-ear right"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-nose small"></div>
+                <div class="preview-tail slim"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "panda") {
+        return `
+            <div class="character-preview panda" style="${baseStyle}">
+                <div class="preview-panda-body"></div>
+                <div class="preview-panda-ear left"></div>
+                <div class="preview-panda-ear right"></div>
+                <div class="preview-panda-patch left"></div>
+                <div class="preview-panda-patch right"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-nose"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "bear") {
+        return `
+            <div class="character-preview bear" style="${baseStyle}">
+                <div class="preview-bear-body"></div>
+                <div class="preview-bear-ear left"></div>
+                <div class="preview-bear-ear right"></div>
+                <div class="preview-bear-muzzle"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
     return `
-        <div class="character-preview" style="--skin-base:${toCssColor(skin.baseColor)}; --skin-accent:${toCssColor(skin.accentColor)}; --skin-inner:${toCssColor(skin.innerEarColor)}; --skin-glow:${toCssColor(skin.glowColor)}; --skin-belly:${toCssColor(skin.bellyColor)};">
+        <div class="character-preview bunny" style="${baseStyle}">
             <div class="character-aura"></div>
             <div class="character-ear left"></div>
             <div class="character-ear right"></div>
@@ -533,6 +772,7 @@ function renderCharacterPreview(skin) {
             <div class="character-eye right"></div>
             <div class="character-nose"></div>
             <div class="character-gem"></div>
+            <div class="character-species">${speciesLabel}</div>
         </div>
     `;
 }
@@ -670,6 +910,8 @@ function createPlayers() {
         flyTimer: 0,
         jumpBoostTimer: 0,
         magnetTimer: 0,
+        shieldTimer: 0,
+        shieldHits: 0,
         bobOffset: Math.random() * Math.PI * 2
     });
 
@@ -688,6 +930,11 @@ function createPlayers() {
 function createPlayerMesh(skinId) {
     const skin = getSkinById(skinId);
     const group = new THREE.Group();
+    const animatedParts = [];
+    const addAnimatedPart = (mesh, kind, speed, amplitude, axis = "z", phase = Math.random() * Math.PI * 2) => {
+        animatedParts.push({ mesh, kind, speed, amplitude, axis, phase, baseRotation: { x: mesh.rotation.x, y: mesh.rotation.y, z: mesh.rotation.z } });
+        return mesh;
+    };
 
     const baseMat = new THREE.MeshStandardMaterial({
         color: skin.baseColor,
@@ -723,42 +970,117 @@ function createPlayerMesh(skinId) {
         emissive: skin.glowColor,
         emissiveIntensity: 0.5,
         transparent: true,
-        opacity: 0.18
-    });
-    const boostAuraMat = new THREE.MeshStandardMaterial({
-        color: skin.glowColor,
-        emissive: skin.glowColor,
-        emissiveIntensity: 0.8,
-        transparent: true,
-        opacity: 0.8
+        opacity: 0.1
     });
 
-    addPart(group, new THREE.BoxGeometry(0.92, 0.92, 0.82), baseMat, 0, 0.5, 0);
-    addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
-    addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, -0.2, 1.05, -0.03, 0, 0, -0.08);
-    addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, 0.2, 1.05, -0.03, 0, 0, 0.08);
-    addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, -0.2, 1.07, 0.04, 0, 0, -0.08);
-    addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, 0.2, 1.07, 0.04, 0, 0, 0.08);
-    addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, -0.25, 0.44, 0.35);
-    addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, 0.25, 0.44, 0.35);
-    addPart(group, new THREE.SphereGeometry(0.06, 10, 10), accentMat, 0, 0.34, 0.43);
-    addPart(group, new THREE.SphereGeometry(0.13, 10, 10), accentMat, 0, 0.72, 0.3);
-    addPart(group, new THREE.SphereGeometry(0.15, 10, 10), accentMat, 0, 0.42, -0.42);
+    let leftEye;
+    let rightEye;
 
-    const leftEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, -0.16, 0.58, 0.41);
-    const rightEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, 0.16, 0.58, 0.41);
+    if (skin.species === "gorilla") {
+        addPart(group, new THREE.BoxGeometry(1.02, 0.9, 0.88), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.5, 0.34, 0.1), bellyMat, 0, 0.35, 0.42);
+        addPart(group, new THREE.BoxGeometry(0.2, 0.58, 0.18), baseMat, -0.36, 0.48, 0, 0, 0, 0.14);
+        addPart(group, new THREE.BoxGeometry(0.2, 0.58, 0.18), baseMat, 0.36, 0.48, 0, 0, 0, -0.14);
+        addPart(group, new THREE.BoxGeometry(0.68, 0.42, 0.52), accentMat, 0, 0.88, 0.06);
+        addPart(group, new THREE.BoxGeometry(0.42, 0.18, 0.18), bellyMat, 0, 0.73, 0.38);
+        addPart(group, new THREE.BoxGeometry(0.12, 0.12, 0.1), baseMat, -0.26, 1.05, 0);
+        addPart(group, new THREE.BoxGeometry(0.12, 0.12, 0.1), baseMat, 0.26, 1.05, 0);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.06, 0.08, 0.04), darkMat, -0.12, 0.9, 0.33);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.06, 0.08, 0.04), darkMat, 0.12, 0.9, 0.33);
+    } else if (skin.species === "chicken") {
+        addPart(group, new THREE.SphereGeometry(0.5, 12, 12), baseMat, 0, 0.54, 0);
+        addPart(group, new THREE.SphereGeometry(0.26, 10, 10), baseMat, 0, 1.0, 0.12);
+        addPart(group, new THREE.ConeGeometry(0.11, 0.28, 4), accentMat, 0, 0.95, 0.42, Math.PI / 2, 0, 0);
+        addPart(group, new THREE.ConeGeometry(0.1, 0.24, 4), innerMat, -0.1, 1.27, 0.04, 0, 0, -0.2);
+        addPart(group, new THREE.ConeGeometry(0.1, 0.24, 4), innerMat, 0, 1.34, 0.04, 0, 0, 0);
+        addPart(group, new THREE.ConeGeometry(0.1, 0.24, 4), innerMat, 0.1, 1.27, 0.04, 0, 0, 0.2);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.3), accentMat, -0.42, 0.54, 0, 0, 0, 0.45), "wing", 2.4, 0.28);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.3), accentMat, 0.42, 0.54, 0, 0, 0, -0.45), "wing", 2.4, -0.28);
+        addPart(group, new THREE.ConeGeometry(0.12, 0.22, 4), glowMat, 0, 0.62, -0.42, -Math.PI / 2, 0, 0);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.1, 0.98, 0.31);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.1, 0.98, 0.31);
+    } else if (skin.species === "duck") {
+        addPart(group, new THREE.SphereGeometry(0.48, 12, 12), baseMat, 0, 0.55, 0);
+        addPart(group, new THREE.SphereGeometry(0.24, 10, 10), baseMat, 0, 0.92, 0.16);
+        addPart(group, new THREE.BoxGeometry(0.3, 0.1, 0.18), accentMat, 0, 0.86, 0.42);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, -0.38, 0.58, 0, 0, 0, 0.4), "wing", 2.1, 0.22);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, 0.38, 0.58, 0, 0, 0, -0.4), "wing", 2.1, -0.22);
+        addPart(group, new THREE.ConeGeometry(0.11, 0.2, 4), glowMat, 0, 0.6, -0.42, -Math.PI / 2, 0, 0);
+        addPart(group, new THREE.BoxGeometry(0.2, 0.16, 0.08), bellyMat, 0, 0.42, 0.4);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.09, 0.96, 0.28);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.09, 0.96, 0.28);
+    } else if (skin.species === "pig") {
+        addPart(group, new THREE.BoxGeometry(0.96, 0.82, 0.86), baseMat, 0, 0.52, 0);
+        addPart(group, new THREE.BoxGeometry(0.46, 0.3, 0.1), bellyMat, 0, 0.35, 0.42);
+        addPart(group, new THREE.BoxGeometry(0.14, 0.28, 0.12), baseMat, -0.22, 1.03, 0.05, 0, 0, -0.3);
+        addPart(group, new THREE.BoxGeometry(0.14, 0.28, 0.12), baseMat, 0.22, 1.03, 0.05, 0, 0, 0.3);
+        addPart(group, new THREE.BoxGeometry(0.28, 0.16, 0.16), accentMat, 0, 0.52, 0.42);
+        addPart(group, new THREE.CylinderGeometry(0.04, 0.04, 0.08, 10), innerMat, -0.06, 0.52, 0.51, Math.PI / 2, 0, 0);
+        addPart(group, new THREE.CylinderGeometry(0.04, 0.04, 0.08, 10), innerMat, 0.06, 0.52, 0.51, Math.PI / 2, 0, 0);
+        addAnimatedPart(addPart(group, new THREE.TorusGeometry(0.07, 0.02, 6, 14), glowMat, 0, 0.18, -0.4, 0, Math.PI / 2, 0.4), "tail", 2.8, 0.5, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.14, 0.7, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.14, 0.7, 0.41);
+    } else if (skin.species === "fox") {
+        addPart(group, new THREE.BoxGeometry(0.92, 0.82, 0.8), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.4, 0.28, 0.08), bellyMat, 0, 0.33, 0.4);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.34, 0.12), baseMat, -0.23, 1.02, 0.02, 0, 0, -0.38), "ear", 2.2, -0.12);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.34, 0.12), baseMat, 0.23, 1.02, 0.02, 0, 0, 0.38), "ear", 2.2, 0.12);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.18, 0.05), innerMat, -0.23, 1.0, 0.08, 0, 0, -0.3);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.18, 0.05), innerMat, 0.23, 1.0, 0.08, 0, 0, 0.3);
+        addPart(group, new THREE.BoxGeometry(0.26, 0.14, 0.22), accentMat, 0, 0.6, 0.42);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.22, 0.22, 0.52), glowMat, 0, 0.42, -0.52, 0.2, 0, 0.5), "tail", 2.1, 0.24, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.7, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.7, 0.41);
+    } else if (skin.species === "cat") {
+        addPart(group, new THREE.BoxGeometry(0.9, 0.82, 0.8), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.36, 0.26, 0.08), bellyMat, 0, 0.34, 0.4);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.11, 0.26, 4), baseMat, -0.21, 1.08, 0.03, 0, 0, -0.1), "ear", 2.5, -0.1);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.11, 0.26, 4), baseMat, 0.21, 1.08, 0.03, 0, 0, 0.1), "ear", 2.5, 0.1);
+        addPart(group, new THREE.ConeGeometry(0.05, 0.16, 4), innerMat, -0.21, 1.05, 0.08, 0, 0, -0.1);
+        addPart(group, new THREE.ConeGeometry(0.05, 0.16, 4), innerMat, 0.21, 1.05, 0.08, 0, 0, 0.1);
+        addAnimatedPart(addPart(group, new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8), glowMat, 0, 0.52, -0.5, 1.1, 0, 0.5), "tail", 2.4, 0.22, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, -0.14, 0.68, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, 0.14, 0.68, 0.41);
+    } else if (skin.species === "panda") {
+        addPart(group, new THREE.BoxGeometry(0.94, 0.84, 0.82), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, -0.22, 1.02, 0.02);
+        addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, 0.22, 1.02, 0.02);
+        addPart(group, new THREE.SphereGeometry(0.12, 10, 10), accentMat, -0.15, 0.67, 0.38);
+        addPart(group, new THREE.SphereGeometry(0.12, 10, 10), accentMat, 0.15, 0.67, 0.38);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.15, 0.68, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.15, 0.68, 0.41);
+    } else if (skin.species === "bear") {
+        addPart(group, new THREE.BoxGeometry(1.0, 0.9, 0.86), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.42, 0.32, 0.08), bellyMat, 0, 0.34, 0.4);
+        addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, -0.23, 1.0, 0.02);
+        addPart(group, new THREE.SphereGeometry(0.11, 10, 10), accentMat, 0.23, 1.0, 0.02);
+        addPart(group, new THREE.BoxGeometry(0.3, 0.16, 0.18), accentMat, 0, 0.56, 0.42);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.72, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.72, 0.41);
+    } else {
+        addPart(group, new THREE.BoxGeometry(0.92, 0.92, 0.82), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.42, 0.3, 0.08), bellyMat, 0, 0.34, 0.4);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, -0.2, 1.05, -0.03, 0, 0, -0.08), "ear", 2.4, -0.1);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.16, 0.52, 0.14), baseMat, 0.2, 1.05, -0.03, 0, 0, 0.08), "ear", 2.4, 0.1);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, -0.2, 1.07, 0.04, 0, 0, -0.08);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.3, 0.05), innerMat, 0.2, 1.07, 0.04, 0, 0, 0.08);
+        addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, -0.25, 0.44, 0.35);
+        addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, 0.25, 0.44, 0.35);
+        addPart(group, new THREE.SphereGeometry(0.06, 10, 10), accentMat, 0, 0.34, 0.43);
+        addPart(group, new THREE.SphereGeometry(0.13, 10, 10), accentMat, 0, 0.72, 0.3);
+        addPart(group, new THREE.SphereGeometry(0.15, 10, 10), accentMat, 0, 0.42, -0.42);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, -0.16, 0.58, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.06, 0.1, 0.04), darkMat, 0.16, 0.58, 0.41);
+    }
+
     leftEye.receiveShadow = false;
     rightEye.receiveShadow = false;
 
     const foreheadGem = addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, 0.9, 0.34, 0.3, 0, 0.2);
-    const halo = addPart(group, new THREE.TorusGeometry(0.36, 0.05, 10, 24), glowMat, 0, 1.18, -0.02, Math.PI / 2, 0, 0);
     const aura = addPart(group, new THREE.SphereGeometry(0.95, 16, 16), auraMat, 0, 0.5, 0);
-    const boostAura = addPart(group, new THREE.TorusGeometry(0.62, 0.05, 8, 26), boostAuraMat, 0, -0.05, 0, Math.PI / 2, 0, 0);
 
     aura.castShadow = false;
-    halo.castShadow = false;
-    boostAura.castShadow = false;
-    boostAura.visible = false;
 
     group.userData = {
         skin,
@@ -768,9 +1090,8 @@ function createPlayerMesh(skinId) {
             { material: innerMat, base: 0.18 },
             { material: glowMat, base: 0.9 }
         ],
+        animatedParts,
         aura,
-        halo,
-        boostAura,
         foreheadGem
     };
 
@@ -869,18 +1190,22 @@ function createPowerupMesh(kind) {
 
     addPart(group, new THREE.OctahedronGeometry(0.2), coreMat, 0, 0, 0);
 
-    if (kind === "fly") {
-        addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, -0.23, 0, 0, 0, 0, 0.5);
-        addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, 0.23, 0, 0, 0, 0, -0.5);
-        addPart(group, new THREE.TorusGeometry(0.34, 0.04, 8, 24), accentMat, 0, 0, 0, Math.PI / 2, 0, 0);
-    } else if (kind === "jump") {
-        addPart(group, new THREE.CylinderGeometry(0.08, 0.08, 0.38, 10), accentMat, 0, -0.12, 0);
-        addPart(group, new THREE.ConeGeometry(0.14, 0.26, 6), accentMat, 0, 0.26, 0);
-    } else {
-        addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, -0.18, 0, 0);
-        addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, 0.18, 0, 0);
-        addPart(group, new THREE.BoxGeometry(0.36, 0.08, 0.08), accentMat, 0, -0.18, 0);
-    }
+        if (kind === "fly") {
+            addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, -0.23, 0, 0, 0, 0, 0.5);
+            addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, 0.23, 0, 0, 0, 0, -0.5);
+            addPart(group, new THREE.TorusGeometry(0.34, 0.04, 8, 24), accentMat, 0, 0, 0, Math.PI / 2, 0, 0);
+        } else if (kind === "jump") {
+            addPart(group, new THREE.CylinderGeometry(0.08, 0.08, 0.38, 10), accentMat, 0, -0.12, 0);
+            addPart(group, new THREE.ConeGeometry(0.14, 0.26, 6), accentMat, 0, 0.26, 0);
+        } else if (kind === "shield") {
+            addPart(group, new THREE.TorusGeometry(0.34, 0.05, 8, 28), accentMat, 0, 0, 0, Math.PI / 2, 0, 0);
+            addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, 0.26, 0);
+            addPart(group, new THREE.OctahedronGeometry(0.1), accentMat, 0, -0.26, 0);
+        } else {
+            addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, -0.18, 0, 0);
+            addPart(group, new THREE.BoxGeometry(0.08, 0.36, 0.08), accentMat, 0.18, 0, 0);
+            addPart(group, new THREE.BoxGeometry(0.36, 0.08, 0.08), accentMat, 0, -0.18, 0);
+        }
 
     const aura = addPart(group, new THREE.SphereGeometry(0.5, 12, 12), auraMat, 0, 0, 0);
     aura.castShadow = false;
@@ -1195,6 +1520,10 @@ function applyPowerup(player, kind) {
     if (kind === "fly") player.flyTimer = Math.max(player.flyTimer, data.duration);
     if (kind === "jump") player.jumpBoostTimer = Math.max(player.jumpBoostTimer, data.duration);
     if (kind === "magnet") player.magnetTimer = Math.max(player.magnetTimer, data.duration);
+    if (kind === "shield") {
+        player.shieldTimer = Math.max(player.shieldTimer, data.duration);
+        player.shieldHits = 1;
+    }
 
     track("powerup_collect", {
         kind,
@@ -1204,6 +1533,7 @@ function applyPowerup(player, kind) {
     if (kind === "fly") playTone(980, 0.09, "triangle", 0.05);
     if (kind === "jump") playTone(1180, 0.08, "triangle", 0.05);
     if (kind === "magnet") playTone(860, 0.1, "triangle", 0.05);
+    if (kind === "shield") playTone(720, 0.14, "triangle", 0.06);
 
     updatePowerupStatus();
 }
@@ -1219,6 +1549,10 @@ function updatePlayers(dtScale) {
         player.flyTimer = Math.max(0, player.flyTimer - dtSeconds);
         player.jumpBoostTimer = Math.max(0, player.jumpBoostTimer - dtSeconds);
         player.magnetTimer = Math.max(0, player.magnetTimer - dtSeconds);
+        player.shieldTimer = Math.max(0, player.shieldTimer - dtSeconds);
+        if (player.shieldTimer <= 0) {
+            player.shieldHits = 0;
+        }
 
         const mesh = playerMeshes[index];
         const targetX = player.roadX + player.lane * CONFIG.laneWidth;
@@ -1251,21 +1585,21 @@ function updatePlayers(dtScale) {
         mesh.rotation.x = player.flyTimer > 0 ? -0.08 : player.isJumping ? -0.18 : 0;
         mesh.rotation.z = (player.currentLaneX - prevX) * -0.7;
 
-        if (mesh.userData.halo) {
-            mesh.userData.halo.rotation.z += 0.015 * dtScale;
-        }
         if (mesh.userData.foreheadGem) {
             mesh.userData.foreheadGem.rotation.y += 0.03 * dtScale;
         }
-        if (mesh.userData.aura) {
-            mesh.userData.aura.material.opacity = player.flyTimer > 0 ? 0.26 : 0.16;
+        if (mesh.userData.animatedParts) {
+            mesh.userData.animatedParts.forEach((part, partIndex) => {
+                const wave = Math.sin(now * part.speed + part.phase + partIndex * 0.5) * part.amplitude;
+                if (part.axis === "x") part.mesh.rotation.x = part.baseRotation.x + wave;
+                else if (part.axis === "y") part.mesh.rotation.y = part.baseRotation.y + wave;
+                else part.mesh.rotation.z = part.baseRotation.z + wave;
+            });
         }
-        if (mesh.userData.boostAura) {
-            const boostColor = getPowerColor(player);
-            mesh.userData.boostAura.visible = player.flyTimer > 0 || player.jumpBoostTimer > 0 || player.magnetTimer > 0;
-            mesh.userData.boostAura.material.color.setHex(boostColor);
-            mesh.userData.boostAura.material.emissive.setHex(boostColor);
-            mesh.userData.boostAura.rotation.z += 0.03 * dtScale;
+        if (mesh.userData.aura) {
+            mesh.userData.aura.material.opacity = player.flyTimer > 0 ? 0.14 : 0.08;
+            mesh.userData.aura.material.color.setHex(getPowerColor(player));
+            mesh.userData.aura.material.emissive.setHex(getPowerColor(player));
         }
         if (mesh.userData.glowMaterials) {
             mesh.userData.glowMaterials.forEach((entry) => {
@@ -1331,9 +1665,19 @@ function updateWorld(dtScale) {
 
                 if (dx < 0.65 && dy < 0.65) {
                     obj.hit = true;
-                    player.alive = false;
-                    mesh.visible = false;
-                    playTone(140, 0.18, "sawtooth", 0.06);
+                    if (player.shieldHits > 0 && player.shieldTimer > 0) {
+                        player.shieldHits = 0;
+                        player.shieldTimer = 0;
+                        scene.remove(obj.mesh);
+                        worldObjects.splice(i, 1);
+                        playTone(640, 0.14, "triangle", 0.06);
+                        updatePowerupStatus();
+                        continue;
+                    } else {
+                        player.alive = false;
+                        mesh.visible = false;
+                        playTone(140, 0.18, "sawtooth", 0.06);
+                    }
                 }
             }
         }
