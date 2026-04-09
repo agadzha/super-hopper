@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<!-- ✅ Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-575H9T1521"></script>
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-575H9T1521');
-</script>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SUPER HOPPER DUO</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
-<link rel="stylesheet" href="style.css" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-575H9T1521"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "G-575H9T1521");
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SUPER HOPPER DUO</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
+    <link rel="stylesheet" href="style.css" />
+</head>
 <body>
     <div id="game-container"></div>
 
@@ -42,9 +40,22 @@ gtag('config', 'G-575H9T1521');
             <span id="level-value">L1</span>
         </div>
 
+        <div id="run-progress" class="hidden">
+            <div id="run-progress-label" class="run-progress-label">LEVEL 1</div>
+            <div class="run-progress-track">
+                <div id="run-progress-fill" class="run-progress-fill"></div>
+            </div>
+        </div>
+
         <div id="powerup-status" class="hidden"></div>
 
+        <div id="combo-display" class="hidden">
+            <span id="combo-label">COMBO x1</span>
+            <span id="combo-bonus">+0</span>
+        </div>
+
         <button id="open-shop-btn" class="shop-open-btn">SHOP</button>
+        <button id="pause-btn" class="pause-btn hidden">PAUSE</button>
 
         <div id="instructions">
             <div class="instruction-block">
@@ -101,6 +112,34 @@ gtag('config', 'G-575H9T1521');
                 </div>
             </div>
 
+            <div class="meta-grid">
+                <div class="meta-card">
+                    <div class="meta-title">DAILY REWARD</div>
+                    <div id="daily-status" class="meta-copy">Ready to claim</div>
+                    <button id="claim-daily-btn" class="meta-btn">CLAIM</button>
+                </div>
+
+                <div class="meta-card">
+                    <div class="meta-title">MISSIONS</div>
+                    <div id="missions-list" class="meta-list"></div>
+                </div>
+
+                <div class="meta-card">
+                    <div class="meta-title">ACHIEVEMENTS</div>
+                    <div id="achievements-list" class="meta-list compact"></div>
+                </div>
+
+                <div class="meta-card">
+                    <div class="meta-title">STATS</div>
+                    <div id="stats-list" class="meta-list compact"></div>
+                </div>
+
+                <div class="meta-card">
+                    <div class="meta-title">RECORDS</div>
+                    <div id="records-list" class="meta-list compact"></div>
+                </div>
+            </div>
+
             <div class="button-row menu-actions">
                 <button id="open-shop-from-menu" class="main-btn">SHOP</button>
                 <button id="start-btn" class="main-btn">PRESS START</button>
@@ -108,11 +147,22 @@ gtag('config', 'G-575H9T1521');
         </div>
 
         <div id="game-over-screen" class="center-screen hidden">
-            <h1 class="title">RUN OVER</h1>
+            <h1 id="finish-title" class="title">RUN OVER</h1>
             <p class="subtitle"><span id="final-score">0</span></p>
+            <div id="reward-summary" class="reward-summary"></div>
             <div class="button-row menu-actions">
+                <button id="next-level-btn" class="main-btn hidden">NEXT LEVEL</button>
                 <button id="restart-btn" class="main-btn">TRY AGAIN</button>
                 <button id="menu-btn" class="main-btn">MENU</button>
+            </div>
+        </div>
+
+        <div id="pause-screen" class="center-screen hidden">
+            <h1 class="title">PAUSED</h1>
+            <p class="subtitle">PRESS P OR RESUME</p>
+            <div class="button-row menu-actions">
+                <button id="resume-btn" class="main-btn">RESUME</button>
+                <button id="pause-menu-btn" class="main-btn">MENU</button>
             </div>
         </div>
 
@@ -125,16 +175,13 @@ gtag('config', 'G-575H9T1521');
 
                 <div id="inspect-viewer" class="inspect-viewer">
                     <div class="inspect-copy">
-                        <div class="shop-title">INSPECT</div>
+                        <div class="shop-title">SHOWCASE</div>
                         <div id="inspect-name" class="inspect-name">Sky Bunny</div>
                         <div id="inspect-meta" class="inspect-meta">Drag to rotate</div>
-                        <div class="inspect-controls">
-                            <button id="inspect-left-btn" class="inspect-btn" type="button">LEFT</button>
-                            <button id="inspect-reset-btn" class="inspect-btn inspect-btn-accent" type="button">RESET</button>
-                            <button id="inspect-right-btn" class="inspect-btn" type="button">RIGHT</button>
-                        </div>
                     </div>
-                    <div id="inspect-viewport" class="inspect-viewport"></div>
+                    <div id="inspect-viewport" class="inspect-viewport">
+                        <div class="inspect-stage"></div>
+                    </div>
                 </div>
 
                 <div class="shop-section">
@@ -145,6 +192,11 @@ gtag('config', 'G-575H9T1521');
                 <div class="shop-section">
                     <div class="shop-title">PLAYER 2 SKINS</div>
                     <div id="skin-shop-p2" class="shop-grid"></div>
+                </div>
+
+                <div class="shop-section">
+                    <div class="shop-title">TRAIL SHOP</div>
+                    <div id="trail-shop" class="shop-grid"></div>
                 </div>
 
                 <div class="shop-section">

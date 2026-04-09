@@ -278,8 +278,38 @@ const SHOP_DATA = {
     ]
 };
 
+const TRAIL_DATA = [
+    { id: "stardust", name: "Stardust", price: 0, color: 0x7cecff },
+    { id: "sunflare", name: "Sunflare", price: 80, color: 0xffc857 },
+    { id: "mintline", name: "Mintline", price: 120, color: 0x7bf1a8 },
+    { id: "roseblink", name: "Rose Blink", price: 150, color: 0xff8fcf },
+    { id: "nightpulse", name: "Night Pulse", price: 210, color: 0x8aa7ff }
+];
+
+const MISSION_LIBRARY = {
+    coins_30: { id: "coins_30", title: "Collect 30 coins", type: "coins", target: 30, reward: 40 },
+    survive_60: { id: "survive_60", title: "Survive 60 seconds", type: "survive", target: 60, reward: 55 },
+    powerups_2: { id: "powerups_2", title: "Catch 2 boosts", type: "powerups", target: 2, reward: 35 },
+    chest_1: { id: "chest_1", title: "Open 1 treasure chest", type: "chests", target: 1, reward: 60 },
+    combo_5: { id: "combo_5", title: "Reach combo x5", type: "combo", target: 5, reward: 45 }
+};
+
+const ACHIEVEMENT_LIBRARY = {
+    first_run: { id: "first_run", title: "First Run", description: "Start your first run." },
+    level_5: { id: "level_5", title: "Level 5", description: "Reach level 5." },
+    level_10: { id: "level_10", title: "Final Night", description: "Reach level 10." },
+    coins_500: { id: "coins_500", title: "Coin Stack", description: "Collect 500 total coins." },
+    skins_5: { id: "skins_5", title: "Closet Ready", description: "Own 5 skins." },
+    trails_3: { id: "trails_3", title: "Trailblazer", description: "Own 3 trails." },
+    versus_win: { id: "versus_win", title: "Versus Winner", description: "Win a 2P run." },
+    mission_master: { id: "mission_master", title: "Mission Master", description: "Finish all active missions." }
+};
+
+const SPECIAL_LEVEL_IDS = new Set([5, 10]);
+
 let state = {
     isPlaying: false,
+    isPaused: false,
     mode: "1p",
     gameType: "levels",
     difficulty: "easy",
@@ -290,12 +320,43 @@ let state = {
     speedInc: LEVELS[1].speedInc,
     spawnGap: LEVELS[1].spawnGap,
     theme: LEVELS[1].theme,
+    runTime: 0,
     players: [],
     coins: 0,
     collectedThisRun: 0,
+    levelRecords: {},
+    comboCount: 0,
+    comboTimer: 0,
+    comboBonus: 0,
+    endlessBest: {
+        easy: 0,
+        normal: 0,
+        hard: 0
+    },
     ownedSkins: ["sky-bunny", "sunset-bunny"],
+    ownedTrails: ["stardust"],
     selectedSkinP1: "sky-bunny",
-    selectedSkinP2: "sunset-bunny"
+    selectedSkinP2: "sunset-bunny",
+    selectedTrailId: "stardust",
+    dailyReward: {
+        lastClaimDay: "",
+        streak: 0
+    },
+    missions: [],
+    achievements: {},
+    stats: {
+        runs: 0,
+        deaths: 0,
+        coinsCollected: 0,
+        bestCombo: 0,
+        powerupsCollected: 0,
+        chestsOpened: 0,
+        versusWins: 0,
+        bestStreak: 0,
+        currentStreak: 0,
+        totalPlayTime: 0,
+        levelsCleared: 0
+    }
 };
 
 const elScoreDisplay = document.getElementById("score-display");
@@ -306,8 +367,12 @@ const elInstructionsP2 = document.getElementById("instruction-p2");
 const elFinalScore = document.getElementById("final-score");
 const elStart = document.getElementById("start-screen");
 const elGameOver = document.getElementById("game-over-screen");
+const elPauseScreen = document.getElementById("pause-screen");
 const elSoundToggle = document.getElementById("sound-toggle");
 const elWalletValue = document.getElementById("wallet-value");
+const elPauseBtn = document.getElementById("pause-btn");
+const elResumeBtn = document.getElementById("resume-btn");
+const elPauseMenuBtn = document.getElementById("pause-menu-btn");
 const elShopPanel = document.getElementById("shop-panel");
 const elOpenShopBtn = document.getElementById("open-shop-btn");
 const elOpenShopFromMenu = document.getElementById("open-shop-from-menu");
@@ -316,19 +381,31 @@ const elSkinShopP1 = document.getElementById("skin-shop-p1");
 const elSkinShopP2 = document.getElementById("skin-shop-p2");
 const elPowerupInfo = document.getElementById("powerup-info");
 const elPowerupStatus = document.getElementById("powerup-status");
+const elComboDisplay = document.getElementById("combo-display");
+const elComboLabel = document.getElementById("combo-label");
+const elComboBonus = document.getElementById("combo-bonus");
 const elInspectViewport = document.getElementById("inspect-viewport");
 const elInspectName = document.getElementById("inspect-name");
 const elInspectMeta = document.getElementById("inspect-meta");
-const elInspectLeftBtn = document.getElementById("inspect-left-btn");
-const elInspectResetBtn = document.getElementById("inspect-reset-btn");
-const elInspectRightBtn = document.getElementById("inspect-right-btn");
 const elSwipeHint = document.getElementById("mobile-swipe-hint");
 const elLevelDisplay = document.getElementById("level-display");
 const elLevelValue = document.getElementById("level-value");
+const elRunProgress = document.getElementById("run-progress");
+const elRunProgressLabel = document.getElementById("run-progress-label");
+const elRunProgressFill = document.getElementById("run-progress-fill");
 const elLevelSelect = document.getElementById("level-select");
 const elMenuBtn = document.getElementById("menu-btn");
 const elLevelsGroup = document.getElementById("levels-group");
 const elDifficultyGroup = document.getElementById("difficulty-group");
+const elDailyStatus = document.getElementById("daily-status");
+const elClaimDailyBtn = document.getElementById("claim-daily-btn");
+const elMissionsList = document.getElementById("missions-list");
+const elAchievementsList = document.getElementById("achievements-list");
+const elStatsList = document.getElementById("stats-list");
+const elTrailShop = document.getElementById("trail-shop");
+const elFinishTitle = document.getElementById("finish-title");
+const elRewardSummary = document.getElementById("reward-summary");
+const elNextLevelBtn = document.getElementById("next-level-btn");
 
 let scene;
 let camera;
@@ -336,6 +413,7 @@ let renderer;
 let playerMeshes = [];
 let floorGroups = [];
 let worldObjects = [];
+let ambientWorldObjects = [];
 let spawnTimer = 0;
 let powerupSpawnTimer = 0;
 let nextPowerupSpawnIn = 7;
@@ -353,8 +431,8 @@ let inspectDragging = false;
 let inspectPointerId = null;
 let inspectDragX = 0;
 let inspectDragY = 0;
-let inspectLastTime = 0;
 let inspectDistance = 3.9;
+let inspectSkinId = "sky-bunny";
 
 let swipeState = {
     tracking: false,
@@ -379,6 +457,213 @@ function sanitizeOwnedSkins(owned) {
     if (!Array.isArray(owned)) return getDefaultOwnedSkins();
     const valid = owned.filter((id) => SHOP_DATA.skins.some((skin) => skin.id === id));
     return valid.length ? valid : getDefaultOwnedSkins();
+}
+
+function getTrailById(id) {
+    return TRAIL_DATA.find((trail) => trail.id === id) || TRAIL_DATA[0];
+}
+
+function getBiomeConfig() {
+    if (state.gameType !== "levels") {
+        return {
+            name: `Endless ${state.difficulty}`,
+            obstacleGapScale: 1,
+            coinChance: 0.02,
+            powerupDelayScale: 1
+        };
+    }
+
+    const levelId = state.currentLevel;
+    if (levelId <= 2) {
+        return {
+            name: "Beginner Road",
+            obstacleGapScale: 1.12,
+            coinChance: 0.035,
+            powerupDelayScale: 0.85
+        };
+    }
+    if (levelId <= 4) {
+        return {
+            name: "Speed Fields",
+            obstacleGapScale: 1,
+            coinChance: 0.025,
+            powerupDelayScale: 1
+        };
+    }
+    if (levelId <= 6) {
+        return {
+            name: "Boss Garden",
+            obstacleGapScale: SPECIAL_LEVEL_IDS.has(levelId) ? 0.94 : 0.98,
+            coinChance: 0.022,
+            powerupDelayScale: 0.8
+        };
+    }
+    if (levelId <= 8) {
+        return {
+            name: "Storm Run",
+            obstacleGapScale: 0.95,
+            coinChance: 0.024,
+            powerupDelayScale: 0.9
+        };
+    }
+    return {
+        name: "Final Night",
+        obstacleGapScale: SPECIAL_LEVEL_IDS.has(levelId) ? 0.9 : 0.94,
+        coinChance: 0.026,
+        powerupDelayScale: 0.88
+    };
+}
+
+function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function createInitialMissions() {
+    return ["coins_30", "survive_60", "powerups_2"].map((id) => ({
+        id,
+        progress: 0,
+        completed: false,
+        claimed: false
+    }));
+}
+
+function ensureMissionSet() {
+    if (!Array.isArray(state.missions) || !state.missions.length) {
+        state.missions = createInitialMissions();
+    }
+    state.missions = state.missions.filter((mission) => MISSION_LIBRARY[mission.id]).slice(0, 3);
+    while (state.missions.length < 3) {
+        const nextId = Object.keys(MISSION_LIBRARY).find((id) => !state.missions.some((mission) => mission.id === id));
+        if (!nextId) break;
+        state.missions.push({ id: nextId, progress: 0, completed: false, claimed: false });
+    }
+}
+
+function ensureAchievementSet() {
+    Object.keys(ACHIEVEMENT_LIBRARY).forEach((id) => {
+        if (typeof state.achievements[id] !== "boolean") {
+            state.achievements[id] = false;
+        }
+    });
+}
+
+function renderDailyReward() {
+    const ready = state.dailyReward.lastClaimDay !== todayKey();
+    const rewardValue = Math.min(100, 25 + state.dailyReward.streak * 5);
+    elDailyStatus.textContent = ready
+        ? `Claim ${rewardValue} coins • streak ${state.dailyReward.streak}`
+        : `Come back tomorrow • streak ${state.dailyReward.streak}`;
+    elClaimDailyBtn.disabled = !ready;
+    elClaimDailyBtn.textContent = ready ? "CLAIM" : "CLAIMED";
+}
+
+function renderMissions() {
+    elMissionsList.innerHTML = "";
+    state.missions.forEach((mission) => {
+        const meta = MISSION_LIBRARY[mission.id];
+        const progress = Math.min(meta.target, mission.progress || 0);
+        const line = document.createElement("div");
+        line.className = "meta-line";
+        line.innerHTML = `${meta.title} <strong>${progress}/${meta.target}</strong> • ${mission.claimed ? "DONE" : `+${meta.reward}`}`;
+        elMissionsList.appendChild(line);
+    });
+}
+
+function renderAchievements() {
+    elAchievementsList.innerHTML = "";
+    Object.values(ACHIEVEMENT_LIBRARY).forEach((achievement) => {
+        const unlocked = state.achievements[achievement.id];
+        const line = document.createElement("div");
+        line.className = "meta-line";
+        line.innerHTML = `${unlocked ? "UNLOCKED" : "LOCKED"} • ${achievement.title}`;
+        elAchievementsList.appendChild(line);
+    });
+}
+
+function renderStats() {
+    elStatsList.innerHTML = "";
+    const lines = [
+        `Runs • ${state.stats.runs}`,
+        `Coins • ${state.stats.coinsCollected}`,
+        `Deaths • ${state.stats.deaths}`,
+        `Best combo • ${state.stats.bestCombo}`,
+        `Best streak • ${state.stats.bestStreak}`,
+        `2P wins • ${state.stats.versusWins}`,
+        `Levels cleared • ${state.stats.levelsCleared}`,
+        `Play time • ${Math.floor(state.stats.totalPlayTime)}s`
+    ];
+    lines.forEach((text) => {
+        const line = document.createElement("div");
+        line.className = "meta-line";
+        line.textContent = text;
+        elStatsList.appendChild(line);
+    });
+}
+
+function renderMetaPanels() {
+    renderDailyReward();
+    renderMissions();
+    renderAchievements();
+    renderStats();
+}
+
+function unlockAchievement(id) {
+    if (!ACHIEVEMENT_LIBRARY[id] || state.achievements[id]) return;
+    state.achievements[id] = true;
+    state.coins += 20;
+    playTone(940, 0.08, "triangle", 0.05);
+    playTone(1180, 0.12, "triangle", 0.04);
+    renderMetaPanels();
+    updateHUD();
+    saveProgress();
+}
+
+function maybeCompleteMission(id) {
+    const mission = state.missions.find((item) => item.id === id);
+    const meta = MISSION_LIBRARY[id];
+    if (!mission || !meta || mission.claimed || mission.completed === true && mission.claimed) return;
+    if ((mission.progress || 0) >= meta.target) {
+        mission.completed = true;
+        mission.claimed = true;
+        state.coins += meta.reward;
+        updateHUD();
+        saveProgress();
+        renderMetaPanels();
+        if (state.missions.every((item) => item.claimed)) {
+            unlockAchievement("mission_master");
+        }
+    }
+}
+
+function updateMissionProgress(type, amount) {
+    state.missions.forEach((mission) => {
+        const meta = MISSION_LIBRARY[mission.id];
+        if (!meta || meta.type !== type || mission.claimed) return;
+        mission.progress = Math.max(mission.progress || 0, meta.type === "survive" ? amount : (mission.progress || 0) + amount);
+        maybeCompleteMission(mission.id);
+    });
+}
+
+function claimDailyReward() {
+    const today = todayKey();
+    if (state.dailyReward.lastClaimDay === today) return;
+    if (state.dailyReward.lastClaimDay) {
+        const last = new Date(state.dailyReward.lastClaimDay);
+        const diffDays = Math.floor((new Date(today) - last) / 86400000);
+        if (diffDays > 1) {
+            state.dailyReward.streak = 0;
+        }
+    }
+    const rewardValue = Math.min(100, 25 + state.dailyReward.streak * 5);
+    state.coins += rewardValue;
+    state.dailyReward.streak += 1;
+    state.dailyReward.lastClaimDay = today;
+    updateHUD();
+    renderDailyReward();
+    renderStats();
+    saveProgress();
+    playTone(820, 0.08, "triangle", 0.05);
+    playTone(1080, 0.12, "triangle", 0.04);
 }
 
 function getPowerColor(player) {
@@ -454,6 +739,7 @@ function init() {
     renderShop();
     renderLevelSelect();
     updateHUD();
+    renderMetaPanels();
     updatePowerupStatus();
     renderer.render(scene, camera);
 }
@@ -474,6 +760,20 @@ function bindUI() {
 
     document.getElementById("restart-btn").addEventListener("click", startGame);
     elMenuBtn.addEventListener("click", returnToMenu);
+    elPauseBtn.addEventListener("click", () => {
+        if (!state.isPlaying) return;
+        setPaused(!state.isPaused);
+    });
+    elResumeBtn.addEventListener("click", () => setPaused(false));
+    elPauseMenuBtn.addEventListener("click", returnToMenu);
+    elClaimDailyBtn.addEventListener("click", claimDailyReward);
+    elNextLevelBtn.addEventListener("click", () => {
+        if (state.currentLevel < state.unlockedLevel) {
+            state.currentLevel += 1;
+            saveProgress();
+            startGame();
+        }
+    });
 
     document.querySelectorAll(".mode-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -556,28 +856,60 @@ function loadProgress() {
     const saved = JSON.parse(localStorage.getItem("super_hopper_progress") || "{}");
     state.coins = saved.coins || 0;
     state.ownedSkins = sanitizeOwnedSkins(saved.ownedSkins);
+    state.ownedTrails = Array.isArray(saved.ownedTrails) && saved.ownedTrails.length ? saved.ownedTrails.filter((id) => TRAIL_DATA.some((trail) => trail.id === id)) : ["stardust"];
     state.unlockedLevel = Math.max(1, Math.min(10, saved.unlockedLevel || 1));
     state.currentLevel = Math.max(1, Math.min(state.unlockedLevel, saved.currentLevel || 1));
     state.gameType = saved.gameType === "endless" ? "endless" : "levels";
     state.difficulty = ENDLESS_DIFFICULTIES[saved.difficulty] ? saved.difficulty : "easy";
+    state.endlessBest.easy = saved.endlessBest?.easy || 0;
+    state.endlessBest.normal = saved.endlessBest?.normal || 0;
+    state.endlessBest.hard = saved.endlessBest?.hard || 0;
+    state.levelRecords = saved.levelRecords || {};
+    state.selectedTrailId = TRAIL_DATA.some((trail) => trail.id === saved.selectedTrailId) ? saved.selectedTrailId : "stardust";
+    state.dailyReward = saved.dailyReward || { lastClaimDay: "", streak: 0 };
+    state.missions = saved.missions || createInitialMissions();
+    state.achievements = saved.achievements || {};
+    state.stats = {
+        runs: saved.stats?.runs || 0,
+        deaths: saved.stats?.deaths || 0,
+        coinsCollected: saved.stats?.coinsCollected || 0,
+        bestCombo: saved.stats?.bestCombo || 0,
+        powerupsCollected: saved.stats?.powerupsCollected || 0,
+        chestsOpened: saved.stats?.chestsOpened || 0,
+        versusWins: saved.stats?.versusWins || 0,
+        bestStreak: saved.stats?.bestStreak || 0,
+        currentStreak: saved.stats?.currentStreak || 0,
+        totalPlayTime: saved.stats?.totalPlayTime || 0,
+        levelsCleared: saved.stats?.levelsCleared || 0
+    };
 
     const fallbackP1 = state.ownedSkins[0] || "sky-bunny";
     const fallbackP2 = state.ownedSkins[1] || fallbackP1;
 
     state.selectedSkinP1 = state.ownedSkins.includes(saved.selectedSkinP1) ? saved.selectedSkinP1 : fallbackP1;
     state.selectedSkinP2 = state.ownedSkins.includes(saved.selectedSkinP2) ? saved.selectedSkinP2 : fallbackP2;
+    ensureMissionSet();
+    ensureAchievementSet();
 }
 
 function saveProgress() {
     localStorage.setItem("super_hopper_progress", JSON.stringify({
         coins: state.coins,
         ownedSkins: state.ownedSkins,
+        ownedTrails: state.ownedTrails,
         selectedSkinP1: state.selectedSkinP1,
         selectedSkinP2: state.selectedSkinP2,
+        selectedTrailId: state.selectedTrailId,
         unlockedLevel: state.unlockedLevel,
         currentLevel: state.currentLevel,
         gameType: state.gameType,
-        difficulty: state.difficulty
+        difficulty: state.difficulty,
+        endlessBest: state.endlessBest,
+        levelRecords: state.levelRecords,
+        dailyReward: state.dailyReward,
+        missions: state.missions,
+        achievements: state.achievements,
+        stats: state.stats
     }));
 }
 
@@ -585,9 +917,51 @@ function updateHUD() {
     elWalletValue.textContent = state.coins;
     if (state.gameType === "levels") {
         elLevelValue.textContent = `L${state.currentLevel}`;
+        if (elRunProgressLabel) {
+            elRunProgressLabel.textContent = `${SPECIAL_LEVEL_IDS.has(state.currentLevel) ? "BOSS" : "LEVEL"} ${state.currentLevel} • ${getBiomeConfig().name}`;
+        }
     } else {
         elLevelValue.textContent = state.difficulty.toUpperCase();
+        if (elRunProgressLabel) {
+            elRunProgressLabel.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • BEST ${Math.floor(state.endlessBest[state.difficulty] || 0)}`;
+        }
     }
+}
+
+function updateRunProgress() {
+    if (!elRunProgress || !elRunProgressFill || !elRunProgressLabel) return;
+
+    if (!state.isPlaying || !state.players.length) {
+        elRunProgress.classList.add("hidden");
+        elRunProgressFill.style.width = "0%";
+        return;
+    }
+
+    const leadScore = Math.max(...state.players.map((player) => player.score));
+    let progress = 0;
+
+    if (state.gameType === "levels") {
+        const target = currentLevelData().target;
+        progress = Math.min(1, leadScore / target);
+        elRunProgressLabel.textContent = `${SPECIAL_LEVEL_IDS.has(state.currentLevel) ? "BOSS" : "LEVEL"} ${state.currentLevel} • ${getBiomeConfig().name} • ${Math.floor(leadScore)} / ${target}`;
+    } else {
+        const milestone = Math.max(400, state.endlessBest[state.difficulty] || 400);
+        progress = Math.min(1, leadScore / milestone);
+        elRunProgressLabel.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • BEST ${Math.floor(state.endlessBest[state.difficulty] || 0)}`;
+    }
+
+    elRunProgressFill.style.width = `${Math.max(0.03, progress) * 100}%`;
+    elRunProgress.classList.remove("hidden");
+}
+
+function setPaused(paused) {
+    if (!state.isPlaying) return;
+    state.isPaused = paused;
+    if (!paused) {
+        lastFrameTime = performance.now();
+    }
+    elPauseScreen.classList.toggle("hidden", !paused);
+    elPauseBtn.textContent = paused ? "RESUME" : "PAUSE";
 }
 
 function updatePowerupStatus() {
@@ -621,10 +995,32 @@ function updatePowerupStatus() {
     elPowerupStatus.classList.remove("hidden");
 }
 
-function resetInspectPose() {
-    inspectRotationY = 0.35;
-    inspectRotationX = -0.12;
-    inspectDistance = 3.9;
+function resetCombo() {
+    state.comboCount = 0;
+    state.comboTimer = 0;
+    state.comboBonus = 0;
+    elComboDisplay.classList.add("hidden");
+    elComboLabel.textContent = "COMBO x1";
+    elComboBonus.textContent = "+0";
+}
+
+function updateComboDisplay() {
+    if (state.comboCount <= 1 || state.comboTimer <= 0) {
+        elComboDisplay.classList.add("hidden");
+        return;
+    }
+
+    elComboLabel.textContent = `COMBO x${state.comboCount}`;
+    elComboBonus.textContent = `+${state.comboBonus}`;
+    elComboDisplay.classList.remove("hidden");
+}
+
+function registerCoinCombo(value) {
+    state.comboCount += 1;
+    state.comboTimer = 1.7;
+    state.comboBonus = Math.floor((state.comboCount - 1) / 3);
+    updateComboDisplay();
+    return value + state.comboBonus;
 }
 
 function bindInspectViewer() {
@@ -662,30 +1058,9 @@ function bindInspectViewer() {
     elInspectViewport.addEventListener("pointercancel", onPointerUp);
     elInspectViewport.addEventListener("wheel", (event) => {
         event.preventDefault();
-        inspectDistance = Math.max(2.7, Math.min(5.4, inspectDistance + event.deltaY * 0.003));
+        inspectDistance = Math.max(2.8, Math.min(5.2, inspectDistance + event.deltaY * 0.003));
         renderInspectFrame(performance.now());
     }, { passive: false });
-
-    if (elInspectLeftBtn) {
-        elInspectLeftBtn.addEventListener("click", () => {
-            inspectRotationY -= Math.PI / 5;
-            renderInspectFrame(performance.now());
-        });
-    }
-
-    if (elInspectResetBtn) {
-        elInspectResetBtn.addEventListener("click", () => {
-            resetInspectPose();
-            renderInspectFrame(performance.now());
-        });
-    }
-
-    if (elInspectRightBtn) {
-        elInspectRightBtn.addEventListener("click", () => {
-            inspectRotationY += Math.PI / 5;
-            renderInspectFrame(performance.now());
-        });
-    }
 }
 
 function renderLevelSelect() {
@@ -737,8 +1112,27 @@ function buySkin(id, playerKey) {
     if (playerKey === "p1") state.selectedSkinP1 = id;
     else state.selectedSkinP2 = id;
 
+    if (state.ownedSkins.length >= 5) unlockAchievement("skins_5");
     updateHUD();
     saveProgress();
+    renderMetaPanels();
+    renderShop();
+}
+
+function buyTrail(id) {
+    const item = getTrailById(id);
+
+    if (!state.ownedTrails.includes(id)) {
+        if (state.coins < item.price) return;
+        state.coins -= item.price;
+        state.ownedTrails.push(id);
+    }
+
+    state.selectedTrailId = id;
+    if (state.ownedTrails.length >= 3) unlockAchievement("trails_3");
+    updateHUD();
+    saveProgress();
+    renderMetaPanels();
     renderShop();
 }
 
@@ -892,9 +1286,11 @@ function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
     SHOP_DATA.skins.forEach((item) => {
         const owned = state.ownedSkins.includes(item.id);
         const selected = selectedSkinId === item.id;
+        const inspectSelected = inspectSkinId === item.id;
 
         const card = document.createElement("div");
         card.className = "shop-item";
+        if (inspectSelected) card.classList.add("inspect-selected");
         card.innerHTML = `
             <div class="shop-preview">${renderCharacterPreview(item)}</div>
             <div class="shop-item-name">${item.name}</div>
@@ -931,9 +1327,29 @@ function renderPowerupInfo() {
     });
 }
 
+function renderTrailGrid() {
+    elTrailShop.innerHTML = "";
+
+    TRAIL_DATA.forEach((item) => {
+        const owned = state.ownedTrails.includes(item.id);
+        const selected = state.selectedTrailId === item.id;
+        const card = document.createElement("div");
+        card.className = "shop-item";
+        card.innerHTML = `
+            <div class="shop-preview"><div class="trail-preview" style="--trail-color:${toCssColor(item.color)}"></div></div>
+            <div class="shop-item-name">${item.name}</div>
+            <div class="shop-item-price">${owned ? "OWNED" : `${item.price} COINS`}</div>
+            <button>${selected ? "SELECTED" : owned ? "USE" : "BUY"}</button>
+        `;
+        card.querySelector("button").addEventListener("click", () => buyTrail(item.id));
+        elTrailShop.appendChild(card);
+    });
+}
+
 function renderShop() {
     renderSkinGrid(elSkinShopP1, state.selectedSkinP1, "p1");
     renderSkinGrid(elSkinShopP2, state.selectedSkinP2, "p2");
+    renderTrailGrid();
     renderPowerupInfo();
 }
 
@@ -952,6 +1368,7 @@ function ensureInspectViewer() {
     inspectRenderer.shadowMap.enabled = true;
     inspectRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
     elInspectViewport.innerHTML = "";
+    elInspectViewport.insertAdjacentHTML("beforeend", `<div class="inspect-stage"></div>`);
     elInspectViewport.appendChild(inspectRenderer.domElement);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.92);
@@ -981,6 +1398,7 @@ function resizeInspectViewer() {
 function setInspectSkin(skinId) {
     ensureInspectViewer();
     const skin = getSkinById(skinId);
+    inspectSkinId = skinId;
 
     if (inspectMesh) {
         inspectScene.remove(inspectMesh);
@@ -994,10 +1412,13 @@ function setInspectSkin(skinId) {
     inspectMesh.scale.setScalar(1.52);
     inspectScene.add(inspectMesh);
 
-    resetInspectPose();
+    inspectRotationY = 0.35;
+    inspectRotationX = -0.12;
+    inspectDistance = 3.9;
 
     elInspectName.textContent = skin.name;
-    elInspectMeta.textContent = `${skin.species.toUpperCase()} • DRAG / SCROLL / RESET`;
+    elInspectMeta.textContent = `${skin.species.toUpperCase()} • DRAG TO ROTATE`;
+    renderShop();
     renderInspectFrame(performance.now());
 }
 
@@ -1023,7 +1444,6 @@ function inspectLoop(now) {
         inspectAnimationId = null;
         return;
     }
-    inspectLastTime = now;
     renderInspectFrame(now);
     inspectAnimationId = requestAnimationFrame(inspectLoop);
 }
@@ -1123,6 +1543,7 @@ function createPlayers() {
         score: 0,
         controls,
         skinId,
+        coinsRun: 0,
         flyTimer: 0,
         jumpBoostTimer: 0,
         magnetTimer: 0,
@@ -1298,12 +1719,33 @@ function createPlayerMesh(skinId) {
 }
 
 function createObstacleMesh() {
-    const type = Math.floor(Math.random() * 3);
+    const difficultyFactor = state.speed / CONFIG.maxSpeed;
+    const specialLevel = state.gameType === "levels" && SPECIAL_LEVEL_IDS.has(state.currentLevel);
+    const roll = Math.random();
     let geo;
+    let variant = "normal";
+    let baseY = 0.45;
 
-    if (type === 0) geo = new THREE.BoxGeometry(0.75, 0.75, 0.75);
-    else if (type === 1) geo = new THREE.ConeGeometry(0.42, 0.95, 5);
-    else geo = new THREE.CylinderGeometry(0.38, 0.38, 0.9, 6);
+    if (roll < 0.18 + difficultyFactor * 0.12) {
+        geo = new THREE.BoxGeometry(1.18, 0.55, 0.7);
+        variant = "wide";
+        baseY = 0.3;
+    } else if (roll < 0.32 + difficultyFactor * 0.14) {
+        geo = new THREE.BoxGeometry(0.78, 0.34, 0.78);
+        variant = "low";
+        baseY = 0.17;
+    } else if (roll < 0.44 + difficultyFactor * 0.12) {
+        geo = new THREE.CylinderGeometry(0.34, 0.34, 0.92, 8);
+        variant = "mover";
+    } else if (roll < 0.56 + (specialLevel ? 0.1 : 0)) {
+        geo = new THREE.ConeGeometry(0.4, 0.9, 5);
+        variant = "hopper";
+    } else {
+        const type = Math.floor(Math.random() * 3);
+        if (type === 0) geo = new THREE.BoxGeometry(0.75, 0.75, 0.75);
+        else if (type === 1) geo = new THREE.ConeGeometry(0.42, 0.95, 5);
+        else geo = new THREE.CylinderGeometry(0.38, 0.38, 0.9, 6);
+    }
 
     const mesh = new THREE.Mesh(
         geo,
@@ -1314,6 +1756,12 @@ function createObstacleMesh() {
     );
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+    mesh.userData.variant = variant;
+    mesh.userData.baseY = baseY;
+    mesh.userData.moveAmp = variant === "mover" ? 0.52 : 0;
+    mesh.userData.moveSpeed = 1.6 + Math.random() * 0.7;
+    mesh.userData.hopAmp = variant === "hopper" ? 0.32 : 0;
+    mesh.userData.hopSpeed = 2.2 + Math.random() * 1.2;
     return mesh;
 }
 
@@ -1342,23 +1790,37 @@ function createDecorationMesh() {
     return group;
 }
 
-function createCoinMesh(value = 1) {
-    const isBig = value === 5;
-    const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(
+function createCoinMesh(value = 1, kind = "coin") {
+    let geometry;
+    let color = 0xffd166;
+
+    if (kind === "chest") {
+        geometry = new THREE.BoxGeometry(0.46, 0.36, 0.36);
+        color = 0xc98933;
+    } else {
+        const isBig = value >= 5;
+        geometry = new THREE.CylinderGeometry(
             isBig ? 0.34 : 0.22,
             isBig ? 0.34 : 0.22,
             isBig ? 0.12 : 0.08,
             18
-        ),
+        );
+        color = value >= 10 ? 0x7cecff : isBig ? 0xff9f1c : 0xffd166;
+    }
+
+    const mesh = new THREE.Mesh(
+        geometry,
         new THREE.MeshStandardMaterial({
-            color: isBig ? 0xff9f1c : 0xffd166,
-            emissive: isBig ? 0xff9f1c : 0xffd166,
+            color,
+            emissive: color,
             emissiveIntensity: 0.35
         })
     );
-    mesh.rotation.x = Math.PI / 2;
+    if (kind !== "chest") {
+        mesh.rotation.x = Math.PI / 2;
+    }
     mesh.castShadow = true;
+    mesh.userData.kind = kind;
     return mesh;
 }
 
@@ -1416,7 +1878,11 @@ function createPowerupMesh(kind) {
     return group;
 }
 
-function spawnTrail(x, y, z, color, scale = 0.08) {
+function getSelectedTrailColor() {
+    return getTrailById(state.selectedTrailId).color;
+}
+
+function spawnTrail(x, y, z, color = getSelectedTrailColor(), scale = 0.08) {
     const mesh = new THREE.Mesh(
         new THREE.SphereGeometry(scale, 6, 6),
         new THREE.MeshStandardMaterial({
@@ -1498,6 +1964,88 @@ function addDecorations() {
     }
 }
 
+function clearAmbientWorld() {
+    ambientWorldObjects.forEach((item) => scene.remove(item.mesh));
+    ambientWorldObjects = [];
+}
+
+function addAmbientWorld() {
+    clearAmbientWorld();
+
+    const specialLevel = state.gameType === "levels" && SPECIAL_LEVEL_IDS.has(state.currentLevel);
+    const levelId = state.currentLevel;
+
+    if (specialLevel || levelId >= 8) {
+        for (let i = 0; i < 22; i++) {
+            const star = new THREE.Mesh(
+                new THREE.SphereGeometry(0.06 + Math.random() * 0.05, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            star.position.set((Math.random() - 0.5) * 26, 5 + Math.random() * 7, -8 - Math.random() * 90);
+            scene.add(star);
+            ambientWorldObjects.push({ mesh: star, type: "star", phase: Math.random() * Math.PI * 2 });
+        }
+    } else {
+        for (let i = 0; i < 8; i++) {
+            const cloud = new THREE.Mesh(
+                new THREE.SphereGeometry(0.55 + Math.random() * 0.25, 8, 8),
+                new THREE.MeshStandardMaterial({ color: 0xf5f7ff, transparent: true, opacity: 0.92 })
+            );
+            cloud.position.set((Math.random() - 0.5) * 20, 4.4 + Math.random() * 2.3, -10 - Math.random() * 80);
+            scene.add(cloud);
+            ambientWorldObjects.push({ mesh: cloud, type: "cloud", drift: 0.004 + Math.random() * 0.003 });
+        }
+    }
+
+    if (levelId === 8) {
+        for (let i = 0; i < 18; i++) {
+            const rain = new THREE.Mesh(
+                new THREE.BoxGeometry(0.03, 0.55, 0.03),
+                new THREE.MeshBasicMaterial({ color: 0xbfe8ff, transparent: true, opacity: 0.7 })
+            );
+            rain.position.set((Math.random() - 0.5) * 20, 5 + Math.random() * 4, -8 - Math.random() * 70);
+            scene.add(rain);
+            ambientWorldObjects.push({ mesh: rain, type: "rain", fall: 0.05 + Math.random() * 0.03 });
+        }
+    }
+
+    if (levelId === 9 || levelId === 10) {
+        for (let i = 0; i < 16; i++) {
+            const ember = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0xffa45b })
+            );
+            ember.position.set((Math.random() - 0.5) * 18, 0.8 + Math.random() * 2, -10 - Math.random() * 70);
+            scene.add(ember);
+            ambientWorldObjects.push({ mesh: ember, type: "ember", rise: 0.01 + Math.random() * 0.02 });
+        }
+    }
+}
+
+function updateAmbientWorld(dtScale) {
+    for (let i = ambientWorldObjects.length - 1; i >= 0; i--) {
+        const item = ambientWorldObjects[i];
+        if (item.type === "cloud") {
+            item.mesh.position.x += item.drift * dtScale * 60;
+            if (item.mesh.position.x > 14) item.mesh.position.x = -14;
+        } else if (item.type === "star") {
+            item.mesh.material.opacity = 0.45 + 0.55 * Math.abs(Math.sin(performance.now() * 0.001 + item.phase));
+        } else if (item.type === "rain") {
+            item.mesh.position.y -= item.fall * dtScale * 10;
+            item.mesh.position.z += state.speed * dtScale * 1.5;
+            if (item.mesh.position.y < -0.5) {
+                item.mesh.position.y = 7;
+            }
+        } else if (item.type === "ember") {
+            item.mesh.position.y += item.rise * dtScale * 10;
+            item.mesh.position.z += state.speed * dtScale * 1.3;
+            if (item.mesh.position.y > 4.5) {
+                item.mesh.position.y = 0.7;
+            }
+        }
+    }
+}
+
 function spawnObstacleRow() {
     const lane = OBSTACLE_LANES[Math.floor(Math.random() * OBSTACLE_LANES.length)];
 
@@ -1519,15 +2067,27 @@ function spawnObstacleRow() {
 
 function spawnCoinRow() {
     const lane = OBSTACLE_LANES[Math.floor(Math.random() * OBSTACLE_LANES.length)];
-    const value = Math.random() < 0.15 ? 5 : 1;
+    const chestRoll = Math.random();
+    let value = 1;
+    let kind = "coin";
+
+    if (chestRoll < 0.03) {
+        value = 25;
+        kind = "chest";
+    } else if (chestRoll < 0.1) {
+        value = 10;
+        kind = "super";
+    } else if (chestRoll < 0.25) {
+        value = 5;
+    }
 
     state.players.forEach((player, index) => {
         if (!player.alive && state.mode === "2p") return;
 
-        const coin = createCoinMesh(value);
+        const coin = createCoinMesh(value, kind);
         coin.position.set(
             player.roadX + lane * CONFIG.laneWidth,
-            value === 5 ? 1.05 : 0.9,
+            kind === "chest" ? 0.95 : value >= 5 ? 1.05 : 0.9,
             CONFIG.coinSpawnDistance
         );
         scene.add(coin);
@@ -1537,7 +2097,8 @@ function spawnCoinRow() {
             type: "coin",
             owner: index,
             taken: false,
-            value
+            value,
+            kind
         });
     });
 }
@@ -1599,22 +2160,37 @@ function startGame() {
     }
 
     state.isPlaying = true;
+    state.isPaused = false;
     state.speed = setup.speed;
     state.speedInc = setup.speedInc;
     state.spawnGap = setup.spawnGap;
     state.theme = setup.theme;
     state.players = createPlayers();
+    state.runTime = 0;
     state.collectedThisRun = 0;
+    state.stats.runs += 1;
+    unlockAchievement("first_run");
+    if (state.currentLevel >= 5) unlockAchievement("level_5");
+    if (state.currentLevel >= 10) unlockAchievement("level_10");
 
     spawnTimer = 0;
     powerupSpawnTimer = 0;
-    nextPowerupSpawnIn = 6 + Math.random() * 4;
+    nextPowerupSpawnIn = state.gameType === "levels" && state.currentLevel <= 3
+        ? 4 + Math.random() * 2.5
+        : SPECIAL_LEVEL_IDS.has(state.currentLevel)
+            ? 3.8 + Math.random() * 2.2
+            : 6 + Math.random() * 4;
+    nextPowerupSpawnIn *= getBiomeConfig().powerupDelayScale;
     lastFrameTime = performance.now();
 
     elStart.classList.add("hidden");
     elGameOver.classList.add("hidden");
+    elPauseScreen.classList.add("hidden");
     elScoreDisplay.classList.remove("hidden");
     elLevelDisplay.classList.remove("hidden");
+    elRunProgress.classList.remove("hidden");
+    elPauseBtn.classList.remove("hidden");
+    elPauseBtn.textContent = "PAUSE";
 
     if (isMobileLike()) elSwipeHint.classList.remove("hidden");
     else elSwipeHint.classList.add("hidden");
@@ -1624,6 +2200,8 @@ function startGame() {
     updateModeUI();
     updateHUD();
     updatePowerupStatus();
+    updateRunProgress();
+    resetCombo();
 
     scene.background = new THREE.Color(state.theme.sky);
     scene.fog = new THREE.Fog(state.theme.sky, 12, 58);
@@ -1633,6 +2211,7 @@ function startGame() {
     clearMeshes(playerMeshes);
     playerMeshes = [];
     clearWorld();
+    clearAmbientWorld();
 
     if (state.mode === "1p") {
         addRoad(0);
@@ -1642,6 +2221,7 @@ function startGame() {
     }
 
     addDecorations();
+    addAmbientWorld();
 
     state.players.forEach((player) => {
         const mesh = createPlayerMesh(player.skinId);
@@ -1650,27 +2230,37 @@ function startGame() {
     });
 
     for (let i = 0; i < 4; i++) spawnObstacleRow();
-    for (let i = 0; i < 2; i++) spawnCoinRow();
+    for (let i = 0; i < (state.currentLevel <= 3 ? 3 : 2); i++) spawnCoinRow();
 
     playTone(520, 0.08, "square", 0.05);
     playTone(700, 0.1, "square", 0.04);
+    saveProgress();
+    renderMetaPanels();
 
     animate(lastFrameTime);
 }
 
 function returnToMenu() {
     state.isPlaying = false;
+    state.isPaused = false;
     if (animationId) cancelAnimationFrame(animationId);
 
     elGameOver.classList.add("hidden");
+    elPauseScreen.classList.add("hidden");
     elStart.classList.remove("hidden");
     elScoreDisplay.classList.add("hidden");
     elLevelDisplay.classList.add("hidden");
+    elRunProgress.classList.add("hidden");
+    elPauseBtn.classList.add("hidden");
     elSwipeHint.classList.add("hidden");
     elPowerupStatus.classList.add("hidden");
+    elComboDisplay.classList.add("hidden");
+    clearAmbientWorld();
 
     renderLevelSelect();
     updateHUD();
+    renderMetaPanels();
+    saveProgress();
 }
 
 function movePlayerLane(player, direction) {
@@ -1698,10 +2288,18 @@ function triggerPlayerAction(playerIndex, action) {
 }
 
 function handleKeyboardInput(e) {
+    if (e.code === "KeyP" || e.code === "Escape") {
+        if (state.isPlaying) {
+            setPaused(!state.isPaused);
+        }
+        return;
+    }
+
     if (!state.isPlaying) {
         if (e.code === "Space" || e.code === "Enter") startGame();
         return;
     }
+    if (state.isPaused) return;
 
     state.players.forEach((player, index) => {
         if (!player.alive) return;
@@ -1722,6 +2320,8 @@ function applyPowerup(player, kind) {
         player.shieldTimer = Math.max(player.shieldTimer, data.duration);
         player.shieldHits = 1;
     }
+    state.stats.powerupsCollected += 1;
+    updateMissionProgress("powerups", 1);
 
     track("powerup_collect", {
         kind,
@@ -1733,12 +2333,16 @@ function applyPowerup(player, kind) {
     if (kind === "magnet") playTone(860, 0.1, "triangle", 0.05);
     if (kind === "shield") playTone(720, 0.14, "triangle", 0.06);
 
+    renderMetaPanels();
     updatePowerupStatus();
 }
 
 function updatePlayers(dtScale) {
     const dtSeconds = dtScale / 60;
     const now = performance.now() * 0.005;
+    state.runTime += dtSeconds;
+    state.stats.totalPlayTime += dtSeconds;
+    updateMissionProgress("survive", state.runTime);
 
     state.players.forEach((player, index) => {
         if (!player.alive) return;
@@ -1797,24 +2401,49 @@ function updatePlayers(dtScale) {
     elScoreP1.textContent = Math.floor(state.players[0]?.score || 0);
     elScoreP2.textContent = Math.floor(state.players[1]?.score || 0);
     updatePowerupStatus();
+    updateRunProgress();
 }
 
 function collectCoin(obj, value) {
     obj.taken = true;
     scene.remove(obj.mesh);
-    state.coins += value;
-    state.collectedThisRun += value;
+    const totalValue = registerCoinCombo(value);
+    state.coins += totalValue;
+    state.collectedThisRun += totalValue;
+    state.stats.coinsCollected += totalValue;
+    state.stats.bestCombo = Math.max(state.stats.bestCombo, state.comboCount);
+    const player = state.players[obj.owner];
+    if (player) {
+        player.coinsRun += totalValue;
+    }
+    if (obj.kind === "chest") {
+        state.stats.chestsOpened += 1;
+        updateMissionProgress("chests", 1);
+    } else {
+        updateMissionProgress("coins", totalValue);
+    }
+    updateMissionProgress("combo", state.comboCount);
+    if (state.stats.coinsCollected >= 500) unlockAchievement("coins_500");
     updateHUD();
+    renderMetaPanels();
     saveProgress();
-    playTone(value === 5 ? 1320 : 1100, 0.06, "square", 0.035);
+    if (obj.kind === "chest") {
+        playTone(720, 0.08, "triangle", 0.05);
+        playTone(980, 0.12, "triangle", 0.04);
+    } else if (value >= 10) {
+        playTone(1240, 0.08, "square", 0.04);
+    } else {
+        playTone(value === 5 ? 1320 : 1100, 0.06, "square", 0.035);
+    }
 }
 
 function updateWorld(dtScale) {
     const dtSeconds = dtScale / 60;
+    const biome = getBiomeConfig();
     spawnTimer += state.speed * dtScale;
     powerupSpawnTimer += dtSeconds;
 
-    if (spawnTimer >= state.spawnGap) {
+    if (spawnTimer >= state.spawnGap * biome.obstacleGapScale) {
         spawnObstacleRow();
         spawnTimer = 0;
     }
@@ -1822,7 +2451,7 @@ function updateWorld(dtScale) {
     if (powerupSpawnTimer >= nextPowerupSpawnIn) {
         spawnPowerupRow();
         powerupSpawnTimer = 0;
-        nextPowerupSpawnIn = 6 + Math.random() * 4.5;
+        nextPowerupSpawnIn = (6 + Math.random() * 4.5) * biome.powerupDelayScale;
     }
 
     for (let i = worldObjects.length - 1; i >= 0; i--) {
@@ -1830,6 +2459,14 @@ function updateWorld(dtScale) {
         obj.mesh.position.z += state.speed * 2 * dtScale;
 
         if (obj.type === "obstacle") {
+            if (obj.mesh.userData.variant === "mover") {
+                obj.mesh.position.x += Math.sin(performance.now() * 0.001 * obj.mesh.userData.moveSpeed) * 0.008 * dtScale * 6;
+            } else if (obj.mesh.userData.variant === "hopper") {
+                obj.mesh.position.y = obj.mesh.userData.baseY + Math.abs(Math.sin(performance.now() * 0.001 * obj.mesh.userData.hopSpeed)) * obj.mesh.userData.hopAmp;
+            } else {
+                obj.mesh.position.y = obj.mesh.userData.baseY || 0.45;
+            }
+
             const player = state.players[obj.owner];
             const mesh = playerMeshes[obj.owner];
 
@@ -1842,8 +2479,10 @@ function updateWorld(dtScale) {
             ) {
                 const dx = Math.abs(mesh.position.x - obj.mesh.position.x);
                 const dy = Math.abs(mesh.position.y - obj.mesh.position.y);
+                const hitWidth = obj.mesh.userData.variant === "wide" ? 0.92 : 0.65;
+                const hitHeight = obj.mesh.userData.variant === "low" ? 0.45 : 0.65;
 
-                if (dx < 0.65 && dy < 0.65) {
+                if (dx < hitWidth && dy < hitHeight) {
                     obj.hit = true;
                     if (player.shieldHits > 0 && player.shieldTimer > 0) {
                         player.shieldHits = 0;
@@ -1936,7 +2575,7 @@ function updateWorld(dtScale) {
         spawnObstacleRow();
     }
 
-    if (Math.random() < 0.02) {
+    if (Math.random() < biome.coinChance) {
         spawnCoinRow();
     }
 }
@@ -1949,6 +2588,15 @@ function finishGame(completed) {
         completed
     });
 
+    const p1 = Math.floor(state.players[0]?.score || 0);
+    const p2 = Math.floor(state.players[1]?.score || 0);
+    const leadScore = Math.max(p1, p2);
+    const levelRecord = state.levelRecords[state.currentLevel] || 0;
+    const isNewLevelRecord = leadScore > levelRecord;
+    if (state.gameType === "levels") {
+        state.levelRecords[state.currentLevel] = Math.max(levelRecord, leadScore);
+    }
+
     if (state.gameType === "levels") {
         if (completed && state.currentLevel < 10 && state.unlockedLevel < state.currentLevel + 1) {
             state.unlockedLevel = state.currentLevel + 1;
@@ -1956,46 +2604,104 @@ function finishGame(completed) {
         renderLevelSelect();
     }
 
-    saveProgress();
+    if (completed) {
+        state.stats.currentStreak += 1;
+        state.stats.bestStreak = Math.max(state.stats.bestStreak, state.stats.currentStreak);
+        if (state.gameType === "levels") {
+            state.stats.levelsCleared += 1;
+        }
+    } else {
+        state.stats.currentStreak = 0;
+        state.stats.deaths += 1;
+    }
 
     state.isPlaying = false;
+    state.isPaused = false;
     elGameOver.classList.remove("hidden");
+    elPauseScreen.classList.add("hidden");
     elScoreDisplay.classList.add("hidden");
     elLevelDisplay.classList.add("hidden");
+    elRunProgress.classList.add("hidden");
+    elPauseBtn.classList.add("hidden");
     elSwipeHint.classList.add("hidden");
     elPowerupStatus.classList.add("hidden");
+    elComboDisplay.classList.add("hidden");
+    elNextLevelBtn.classList.toggle("hidden", !(completed && state.gameType === "levels" && state.currentLevel < state.unlockedLevel));
 
-    const p1 = Math.floor(state.players[0]?.score || 0);
-    const p2 = Math.floor(state.players[1]?.score || 0);
+    const versusWinner = state.mode === "2p"
+        ? (() => {
+            const p1Alive = state.players[0]?.alive ? 1 : 0;
+            const p2Alive = state.players[1]?.alive ? 1 : 0;
+            if (p1Alive !== p2Alive) return p1Alive > p2Alive ? "P1" : "P2";
+            if (p1 !== p2) return p1 > p2 ? "P1" : "P2";
+            const p1Coins = state.players[0]?.coinsRun || 0;
+            const p2Coins = state.players[1]?.coinsRun || 0;
+            if (p1Coins !== p2Coins) return p1Coins > p2Coins ? "P1" : "P2";
+            return "DRAW";
+        })()
+        : null;
+
+    elRewardSummary.innerHTML = "";
 
     if (state.gameType === "endless") {
+        elFinishTitle.textContent = "ENDLESS OVER";
+        state.endlessBest[state.difficulty] = Math.max(state.endlessBest[state.difficulty] || 0, p1);
         if (state.mode === "1p") {
-            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • SCORE ${p1} • COINS +${state.collectedThisRun}`;
-        } else if (p1 > p2) {
+            elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • SCORE ${p1} • BEST ${Math.floor(state.endlessBest[state.difficulty])} • COINS +${state.collectedThisRun}`;
+        } else if (versusWinner === "P1") {
             elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • P1 WINS ${p1}-${p2}`;
-        } else if (p2 > p1) {
+            state.stats.versusWins += 1;
+            unlockAchievement("versus_win");
+        } else if (versusWinner === "P2") {
             elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • P2 WINS ${p2}-${p1}`;
         } else {
             elFinalScore.textContent = `ENDLESS ${state.difficulty.toUpperCase()} • DRAW ${p1}-${p2}`;
         }
+        elRewardSummary.innerHTML = `
+            <div class="reward-line">Coins earned • ${state.collectedThisRun}</div>
+            <div class="reward-line">Best ${state.difficulty.toUpperCase()} • ${Math.floor(state.endlessBest[state.difficulty])}</div>
+            <div class="reward-line">Run time • ${Math.floor(state.runTime)}s</div>
+        `;
+        renderMetaPanels();
+        saveProgress();
         return;
     }
 
     const level = currentLevelData();
 
     if (completed) {
+        elFinishTitle.textContent = "LEVEL COMPLETE";
         if (state.mode === "1p") {
             elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • SCORE ${p1} • COINS +${state.collectedThisRun}`;
-        } else if (p1 > p2) {
+        } else if (versusWinner === "P1") {
             elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • P1 WINS ${p1}-${p2}`;
-        } else if (p2 > p1) {
+            state.stats.versusWins += 1;
+            unlockAchievement("versus_win");
+        } else if (versusWinner === "P2") {
             elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • P2 WINS ${p2}-${p1}`;
         } else {
             elFinalScore.textContent = `LEVEL ${level.id} COMPLETE • DRAW ${p1}-${p2}`;
         }
+        elRewardSummary.innerHTML = `
+            <div class="reward-line">Reward • ${state.collectedThisRun} coins</div>
+            <div class="reward-line">${isNewLevelRecord ? "New level record" : "Best level score"} • ${Math.floor(state.levelRecords[state.currentLevel])}</div>
+            <div class="reward-line">${SPECIAL_LEVEL_IDS.has(level.id) ? "Boss stage cleared" : "Stage cleared"} • streak ${state.stats.currentStreak}</div>
+            <div class="reward-line">Run time • ${Math.floor(state.runTime)}s</div>
+        `;
+        playTone(780, 0.08, "triangle", 0.05);
+        playTone(1040, 0.12, "triangle", 0.04);
     } else {
+        elFinishTitle.textContent = "RUN OVER";
         elFinalScore.textContent = `FAILED LEVEL ${level.id} • TARGET ${level.target}`;
+        elRewardSummary.innerHTML = `
+            <div class="reward-line">Best level score • ${Math.floor(state.levelRecords[state.currentLevel] || 0)}</div>
+            <div class="reward-line">Current streak reset</div>
+            <div class="reward-line">Run time • ${Math.floor(state.runTime)}s</div>
+        `;
+        playTone(180, 0.15, "sawtooth", 0.05);
     }
+    renderMetaPanels();
+    saveProgress();
 }
 
 function animate(now = performance.now()) {
@@ -2003,14 +2709,30 @@ function animate(now = performance.now()) {
 
     animationId = requestAnimationFrame(animate);
 
+    if (state.isPaused) {
+        renderer.render(scene, camera);
+        return;
+    }
+
     const deltaMs = Math.min(now - lastFrameTime, 33);
     lastFrameTime = now;
     const dtScale = deltaMs / (1000 / 60);
+    const dtSeconds = dtScale / 60;
+
+    if (state.comboTimer > 0) {
+        state.comboTimer = Math.max(0, state.comboTimer - dtSeconds);
+        if (state.comboTimer <= 0) {
+            resetCombo();
+        } else {
+            updateComboDisplay();
+        }
+    }
 
     state.speed = Math.min(state.speed + state.speedInc * dtScale, CONFIG.maxSpeed);
 
     updatePlayers(dtScale);
     updateWorld(dtScale);
+    updateAmbientWorld(dtScale);
 
     const allDead = state.players.every((player) => !player.alive);
     if (allDead) {
