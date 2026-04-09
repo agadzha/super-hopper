@@ -274,6 +274,115 @@ const SHOP_DATA = {
             glowColor: 0xffd166,
             bellyColor: 0xfff6d5,
             eyeColor: 0x4c3210
+        },
+        {
+            id: "wolf-frost",
+            name: "Wolf Frost",
+            price: 350,
+            species: "wolf",
+            baseColor: 0x94a6c8,
+            accentColor: 0xf6fbff,
+            innerEarColor: 0xdfe9ff,
+            glowColor: 0x9cd8ff,
+            bellyColor: 0xeef5ff,
+            eyeColor: 0x1d2431
+        },
+        {
+            id: "frog-bloom",
+            name: "Frog Bloom",
+            price: 230,
+            species: "frog",
+            baseColor: 0x79d96b,
+            accentColor: 0xc7ff9a,
+            innerEarColor: 0x9cff8c,
+            glowColor: 0x81ff9a,
+            bellyColor: 0xe8ffd7,
+            eyeColor: 0x1b3b1d
+        },
+        {
+            id: "raccoon-flash",
+            name: "Raccoon Flash",
+            price: 340,
+            species: "raccoon",
+            baseColor: 0x56606e,
+            accentColor: 0xd9e0ea,
+            innerEarColor: 0xc6ced8,
+            glowColor: 0xaec2d8,
+            bellyColor: 0xf0f3f8,
+            eyeColor: 0x14181d
+        },
+        {
+            id: "dragon-blaze",
+            name: "Dragon Blaze",
+            price: 420,
+            species: "dragon",
+            baseColor: 0xb5442d,
+            accentColor: 0xffd166,
+            innerEarColor: 0xff8d5c,
+            glowColor: 0xff7a2f,
+            bellyColor: 0xffe3b3,
+            eyeColor: 0x25110b
+        },
+        {
+            id: "shark-bite",
+            name: "Shark Bite",
+            price: 410,
+            species: "shark",
+            baseColor: 0x4b7da8,
+            accentColor: 0xe6f7ff,
+            innerEarColor: 0x8ecae6,
+            glowColor: 0x7cecff,
+            bellyColor: 0xdff6ff,
+            eyeColor: 0x102030
+        },
+        {
+            id: "owl-orbit",
+            name: "Owl Orbit",
+            price: 395,
+            species: "owl",
+            baseColor: 0x7b5f49,
+            accentColor: 0xffe7bd,
+            innerEarColor: 0xc89b6e,
+            glowColor: 0xffcf7d,
+            bellyColor: 0xf6ead9,
+            eyeColor: 0x24160f
+        },
+        {
+            id: "robot-zero",
+            name: "Robot Zero",
+            price: 450,
+            species: "robot",
+            baseColor: 0x7e8798,
+            accentColor: 0x52f7d4,
+            innerEarColor: 0xb6c0d0,
+            glowColor: 0x52f7d4,
+            bellyColor: 0xe4e9f2,
+            eyeColor: 0x08131a
+        },
+        {
+            id: "ghost-glide",
+            name: "Ghost Glide",
+            price: 430,
+            species: "ghost",
+            baseColor: 0xe9ecff,
+            accentColor: 0xffffff,
+            innerEarColor: 0xb8c3ff,
+            glowColor: 0x8fd3ff,
+            bellyColor: 0xf9fbff,
+            eyeColor: 0x162033
+        },
+        {
+            id: "void-bunny",
+            name: "Void Bunny",
+            price: 0,
+            secret: true,
+            species: "void",
+            baseColor: 0x171422,
+            accentColor: 0x7e6bff,
+            innerEarColor: 0xb08cff,
+            glowColor: 0x45f2ff,
+            bellyColor: 0x2e2951,
+            eyeColor: 0xf4fbff
         }
     ]
 };
@@ -321,6 +430,7 @@ let state = {
     spawnGap: LEVELS[1].spawnGap,
     theme: LEVELS[1].theme,
     runTime: 0,
+    reviveUsed: false,
     players: [],
     coins: 0,
     collectedThisRun: 0,
@@ -328,12 +438,15 @@ let state = {
     comboCount: 0,
     comboTimer: 0,
     comboBonus: 0,
+    feverTimer: 0,
+    feverTriggeredThisRun: false,
     endlessBest: {
         easy: 0,
         normal: 0,
         hard: 0
     },
-    ownedSkins: ["sky-bunny", "sunset-bunny"],
+    ownedSkinsP1: ["sky-bunny", "sunset-bunny"],
+    ownedSkinsP2: ["sky-bunny", "sunset-bunny"],
     ownedTrails: ["stardust"],
     selectedSkinP1: "sky-bunny",
     selectedSkinP2: "sunset-bunny",
@@ -341,6 +454,10 @@ let state = {
     dailyReward: {
         lastClaimDay: "",
         streak: 0
+    },
+    luckySpin: {
+        lastSpinDay: "",
+        lastResult: ""
     },
     missions: [],
     achievements: {},
@@ -377,6 +494,9 @@ const elShopPanel = document.getElementById("shop-panel");
 const elOpenShopBtn = document.getElementById("open-shop-btn");
 const elOpenShopFromMenu = document.getElementById("open-shop-from-menu");
 const elCloseShopBtn = document.getElementById("close-shop-btn");
+const elProgressPanel = document.getElementById("progress-panel");
+const elOpenProgressBtn = document.getElementById("open-progress-btn");
+const elCloseProgressBtn = document.getElementById("close-progress-btn");
 const elSkinShopP1 = document.getElementById("skin-shop-p1");
 const elSkinShopP2 = document.getElementById("skin-shop-p2");
 const elPowerupInfo = document.getElementById("powerup-info");
@@ -399,13 +519,17 @@ const elLevelsGroup = document.getElementById("levels-group");
 const elDifficultyGroup = document.getElementById("difficulty-group");
 const elDailyStatus = document.getElementById("daily-status");
 const elClaimDailyBtn = document.getElementById("claim-daily-btn");
+const elSpinStatus = document.getElementById("spin-status");
+const elSpinBtn = document.getElementById("spin-btn");
 const elMissionsList = document.getElementById("missions-list");
 const elAchievementsList = document.getElementById("achievements-list");
 const elStatsList = document.getElementById("stats-list");
+const elRecordsList = document.getElementById("records-list");
 const elTrailShop = document.getElementById("trail-shop");
 const elFinishTitle = document.getElementById("finish-title");
 const elRewardSummary = document.getElementById("reward-summary");
 const elNextLevelBtn = document.getElementById("next-level-btn");
+const elReviveBtn = document.getElementById("revive-btn");
 
 let scene;
 let camera;
@@ -450,13 +574,41 @@ function getSkinById(id) {
 }
 
 function getDefaultOwnedSkins() {
-    return SHOP_DATA.skins.filter((skin) => skin.price === 0).map((skin) => skin.id);
+    return SHOP_DATA.skins.filter((skin) => skin.price === 0 && !skin.secret).map((skin) => skin.id);
 }
 
 function sanitizeOwnedSkins(owned) {
     if (!Array.isArray(owned)) return getDefaultOwnedSkins();
     const valid = owned.filter((id) => SHOP_DATA.skins.some((skin) => skin.id === id));
     return valid.length ? valid : getDefaultOwnedSkins();
+}
+
+function getOwnedSkins(playerKey) {
+    return playerKey === "p2" ? state.ownedSkinsP2 : state.ownedSkinsP1;
+}
+
+function setOwnedSkins(playerKey, list) {
+    if (playerKey === "p2") state.ownedSkinsP2 = list;
+    else state.ownedSkinsP1 = list;
+}
+
+function getAllOwnedSkinIds() {
+    return [...new Set([...state.ownedSkinsP1, ...state.ownedSkinsP2])];
+}
+
+function isSecretSkinUnlocked() {
+    return Object.values(state.achievements).filter(Boolean).length >= 4;
+}
+
+function syncSecretSkinUnlock() {
+    const secretId = "void-bunny";
+    if (!isSecretSkinUnlocked()) return;
+    if (!state.ownedSkinsP1.includes(secretId)) state.ownedSkinsP1.push(secretId);
+    if (!state.ownedSkinsP2.includes(secretId)) state.ownedSkinsP2.push(secretId);
+}
+
+function getVisibleSkins() {
+    return SHOP_DATA.skins.filter((skin) => !skin.secret || isSecretSkinUnlocked());
 }
 
 function getTrailById(id) {
@@ -557,6 +709,17 @@ function renderDailyReward() {
     elClaimDailyBtn.textContent = ready ? "CLAIM" : "CLAIMED";
 }
 
+function renderLuckySpin() {
+    const ready = state.luckySpin.lastSpinDay !== todayKey();
+    elSpinStatus.textContent = ready
+        ? "Ready to spin for coins or loot"
+        : state.luckySpin.lastResult
+            ? `Come back tomorrow • ${state.luckySpin.lastResult}`
+            : "Come back tomorrow";
+    elSpinBtn.disabled = !ready;
+    elSpinBtn.textContent = ready ? "SPIN" : "SPUN";
+}
+
 function renderMissions() {
     elMissionsList.innerHTML = "";
     state.missions.forEach((mission) => {
@@ -600,19 +763,53 @@ function renderStats() {
     });
 }
 
+function renderRecords() {
+    elRecordsList.innerHTML = "";
+
+    const levelEntries = Object.entries(state.levelRecords)
+        .map(([level, score]) => ({ level: Number(level), score: Math.floor(score || 0) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+    if (!levelEntries.length) {
+        const empty = document.createElement("div");
+        empty.className = "meta-line";
+        empty.textContent = "No records yet";
+        elRecordsList.appendChild(empty);
+    } else {
+        levelEntries.forEach((entry) => {
+            const line = document.createElement("div");
+            line.className = "meta-line";
+            line.textContent = `Level ${entry.level} • ${entry.score}`;
+            elRecordsList.appendChild(line);
+        });
+    }
+
+    ["easy", "normal", "hard"].forEach((difficulty) => {
+        const line = document.createElement("div");
+        line.className = "meta-line";
+        line.textContent = `Endless ${difficulty.toUpperCase()} • ${Math.floor(state.endlessBest[difficulty] || 0)}`;
+        elRecordsList.appendChild(line);
+    });
+}
+
 function renderMetaPanels() {
     renderDailyReward();
+    renderLuckySpin();
     renderMissions();
     renderAchievements();
     renderStats();
+    renderRecords();
 }
 
 function unlockAchievement(id) {
     if (!ACHIEVEMENT_LIBRARY[id] || state.achievements[id]) return;
     state.achievements[id] = true;
+    syncSecretSkinUnlock();
     state.coins += 20;
     playTone(940, 0.08, "triangle", 0.05);
     playTone(1180, 0.12, "triangle", 0.04);
+    renderShop();
     renderMetaPanels();
     updateHUD();
     saveProgress();
@@ -664,6 +861,51 @@ function claimDailyReward() {
     saveProgress();
     playTone(820, 0.08, "triangle", 0.05);
     playTone(1080, 0.12, "triangle", 0.04);
+}
+
+function claimLuckySpin() {
+    if (state.luckySpin.lastSpinDay === todayKey()) return;
+
+    const options = [
+        { label: "+40 coins", apply: () => { state.coins += 40; } },
+        { label: "+90 coins", apply: () => { state.coins += 90; } },
+        { label: "+180 coins", apply: () => { state.coins += 180; } },
+        {
+            label: "Free trail",
+            apply: () => {
+                const trail = TRAIL_DATA.find((item) => !state.ownedTrails.includes(item.id));
+                if (trail) {
+                    state.ownedTrails.push(trail.id);
+                    state.selectedTrailId = trail.id;
+                } else {
+                    state.coins += 120;
+                }
+            }
+        },
+        {
+            label: "Free P1 skin",
+            apply: () => {
+                const skin = getVisibleSkins().find((item) => !getOwnedSkins("p1").includes(item.id));
+                if (skin) {
+                    state.ownedSkinsP1.push(skin.id);
+                    state.selectedSkinP1 = skin.id;
+                } else {
+                    state.coins += 150;
+                }
+            }
+        }
+    ];
+
+    const roll = options[Math.floor(Math.random() * options.length)];
+    roll.apply();
+    state.luckySpin.lastSpinDay = todayKey();
+    state.luckySpin.lastResult = roll.label;
+    updateHUD();
+    renderShop();
+    renderMetaPanels();
+    saveProgress();
+    playTone(740, 0.08, "triangle", 0.05);
+    playTone(980, 0.12, "triangle", 0.04);
 }
 
 function getPowerColor(player) {
@@ -760,6 +1002,7 @@ function bindUI() {
 
     document.getElementById("restart-btn").addEventListener("click", startGame);
     elMenuBtn.addEventListener("click", returnToMenu);
+    elReviveBtn.addEventListener("click", reviveRun);
     elPauseBtn.addEventListener("click", () => {
         if (!state.isPlaying) return;
         setPaused(!state.isPaused);
@@ -811,6 +1054,9 @@ function bindUI() {
     elOpenShopBtn.addEventListener("click", openShop);
     elOpenShopFromMenu.addEventListener("click", openShop);
     elCloseShopBtn.addEventListener("click", closeShop);
+    elOpenProgressBtn.addEventListener("click", openProgressPanel);
+    elCloseProgressBtn.addEventListener("click", closeProgressPanel);
+    elSpinBtn.addEventListener("click", claimLuckySpin);
 
     bindSwipeControls();
     bindInspectViewer();
@@ -855,7 +1101,8 @@ function isMobileLike() {
 function loadProgress() {
     const saved = JSON.parse(localStorage.getItem("super_hopper_progress") || "{}");
     state.coins = saved.coins || 0;
-    state.ownedSkins = sanitizeOwnedSkins(saved.ownedSkins);
+    state.ownedSkinsP1 = sanitizeOwnedSkins(saved.ownedSkinsP1 || saved.ownedSkins);
+    state.ownedSkinsP2 = sanitizeOwnedSkins(saved.ownedSkinsP2 || saved.ownedSkins);
     state.ownedTrails = Array.isArray(saved.ownedTrails) && saved.ownedTrails.length ? saved.ownedTrails.filter((id) => TRAIL_DATA.some((trail) => trail.id === id)) : ["stardust"];
     state.unlockedLevel = Math.max(1, Math.min(10, saved.unlockedLevel || 1));
     state.currentLevel = Math.max(1, Math.min(state.unlockedLevel, saved.currentLevel || 1));
@@ -867,6 +1114,7 @@ function loadProgress() {
     state.levelRecords = saved.levelRecords || {};
     state.selectedTrailId = TRAIL_DATA.some((trail) => trail.id === saved.selectedTrailId) ? saved.selectedTrailId : "stardust";
     state.dailyReward = saved.dailyReward || { lastClaimDay: "", streak: 0 };
+    state.luckySpin = saved.luckySpin || { lastSpinDay: "", lastResult: "" };
     state.missions = saved.missions || createInitialMissions();
     state.achievements = saved.achievements || {};
     state.stats = {
@@ -883,19 +1131,21 @@ function loadProgress() {
         levelsCleared: saved.stats?.levelsCleared || 0
     };
 
-    const fallbackP1 = state.ownedSkins[0] || "sky-bunny";
-    const fallbackP2 = state.ownedSkins[1] || fallbackP1;
-
-    state.selectedSkinP1 = state.ownedSkins.includes(saved.selectedSkinP1) ? saved.selectedSkinP1 : fallbackP1;
-    state.selectedSkinP2 = state.ownedSkins.includes(saved.selectedSkinP2) ? saved.selectedSkinP2 : fallbackP2;
-    ensureMissionSet();
     ensureAchievementSet();
+    syncSecretSkinUnlock();
+    const fallbackP1 = state.ownedSkinsP1[0] || "sky-bunny";
+    const fallbackP2 = state.ownedSkinsP2[0] || "sunset-bunny";
+
+    state.selectedSkinP1 = state.ownedSkinsP1.includes(saved.selectedSkinP1) ? saved.selectedSkinP1 : fallbackP1;
+    state.selectedSkinP2 = state.ownedSkinsP2.includes(saved.selectedSkinP2) ? saved.selectedSkinP2 : fallbackP2;
+    ensureMissionSet();
 }
 
 function saveProgress() {
     localStorage.setItem("super_hopper_progress", JSON.stringify({
         coins: state.coins,
-        ownedSkins: state.ownedSkins,
+        ownedSkinsP1: state.ownedSkinsP1,
+        ownedSkinsP2: state.ownedSkinsP2,
         ownedTrails: state.ownedTrails,
         selectedSkinP1: state.selectedSkinP1,
         selectedSkinP2: state.selectedSkinP2,
@@ -907,6 +1157,7 @@ function saveProgress() {
         endlessBest: state.endlessBest,
         levelRecords: state.levelRecords,
         dailyReward: state.dailyReward,
+        luckySpin: state.luckySpin,
         missions: state.missions,
         achievements: state.achievements,
         stats: state.stats
@@ -999,19 +1250,21 @@ function resetCombo() {
     state.comboCount = 0;
     state.comboTimer = 0;
     state.comboBonus = 0;
+    state.feverTimer = 0;
+    state.feverTriggeredThisRun = false;
     elComboDisplay.classList.add("hidden");
     elComboLabel.textContent = "COMBO x1";
     elComboBonus.textContent = "+0";
 }
 
 function updateComboDisplay() {
-    if (state.comboCount <= 1 || state.comboTimer <= 0) {
+    if (state.comboCount <= 1 && state.feverTimer <= 0 && state.comboTimer <= 0) {
         elComboDisplay.classList.add("hidden");
         return;
     }
 
-    elComboLabel.textContent = `COMBO x${state.comboCount}`;
-    elComboBonus.textContent = `+${state.comboBonus}`;
+    elComboLabel.textContent = state.feverTimer > 0 ? `FEVER x${state.comboCount}` : `COMBO x${state.comboCount}`;
+    elComboBonus.textContent = state.feverTimer > 0 ? `HOT +${state.comboBonus}` : `+${state.comboBonus}`;
     elComboDisplay.classList.remove("hidden");
 }
 
@@ -1019,8 +1272,14 @@ function registerCoinCombo(value) {
     state.comboCount += 1;
     state.comboTimer = 1.7;
     state.comboBonus = Math.floor((state.comboCount - 1) / 3);
+    if (state.comboCount >= 8 && !state.feverTriggeredThisRun) {
+        state.feverTimer = 6;
+        state.feverTriggeredThisRun = true;
+        playTone(980, 0.08, "triangle", 0.05);
+        playTone(1240, 0.12, "triangle", 0.04);
+    }
     updateComboDisplay();
-    return value + state.comboBonus;
+    return value + state.comboBonus + (state.feverTimer > 0 ? 2 : 0);
 }
 
 function bindInspectViewer() {
@@ -1100,19 +1359,75 @@ function closeShop() {
     stopInspectLoop();
 }
 
+function openProgressPanel() {
+    renderMetaPanels();
+    elProgressPanel.classList.remove("hidden");
+}
+
+function closeProgressPanel() {
+    elProgressPanel.classList.add("hidden");
+}
+
+function canReviveNow() {
+    return state.mode === "1p" && !state.reviveUsed && state.coins >= 75 && state.players.length === 1;
+}
+
+function reviveRun() {
+    if (!canReviveNow() || state.isPlaying) return;
+
+    const player = state.players[0];
+    const mesh = playerMeshes[0];
+    if (!player || !mesh) return;
+
+    state.coins -= 75;
+    state.reviveUsed = true;
+    state.isPlaying = true;
+    state.isPaused = false;
+    player.alive = true;
+    player.lane = 0;
+    player.currentLaneX = player.roadX;
+    player.isJumping = false;
+    player.jumpVel = 0;
+    player.playerY = 0;
+    player.flyTimer = 0;
+    player.jumpBoostTimer = 0;
+    player.magnetTimer = 0;
+    player.shieldTimer = 3;
+    player.shieldHits = 1;
+    mesh.visible = true;
+    mesh.position.set(player.roadX, 0.45, 0);
+    lastFrameTime = performance.now();
+
+    elGameOver.classList.add("hidden");
+    elScoreDisplay.classList.remove("hidden");
+    elLevelDisplay.classList.remove("hidden");
+    elRunProgress.classList.remove("hidden");
+    elPauseBtn.classList.remove("hidden");
+    if (isMobileLike()) elSwipeHint.classList.remove("hidden");
+
+    updateHUD();
+    updateRunProgress();
+    updatePowerupStatus();
+    saveProgress();
+    playTone(660, 0.08, "triangle", 0.05);
+    playTone(920, 0.12, "triangle", 0.04);
+    animate(lastFrameTime);
+}
+
 function buySkin(id, playerKey) {
     const item = getSkinById(id);
+    const ownedList = getOwnedSkins(playerKey);
 
-    if (!state.ownedSkins.includes(id)) {
+    if (!ownedList.includes(id)) {
         if (state.coins < item.price) return;
         state.coins -= item.price;
-        state.ownedSkins.push(id);
+        setOwnedSkins(playerKey, [...ownedList, id]);
     }
 
     if (playerKey === "p1") state.selectedSkinP1 = id;
     else state.selectedSkinP2 = id;
 
-    if (state.ownedSkins.length >= 5) unlockAchievement("skins_5");
+    if (getAllOwnedSkinIds().length >= 5) unlockAchievement("skins_5");
     updateHUD();
     saveProgress();
     renderMetaPanels();
@@ -1216,6 +1531,23 @@ function renderCharacterPreview(skin) {
         `;
     }
 
+    if (skin.species === "wolf") {
+        return `
+            <div class="character-preview wolf" style="${baseStyle}">
+                <div class="preview-wolf-body"></div>
+                <div class="preview-wolf-ear left"></div>
+                <div class="preview-wolf-ear right"></div>
+                <div class="preview-wolf-muzzle"></div>
+                <div class="preview-wolf-fang left"></div>
+                <div class="preview-wolf-fang right"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-tail fluffy"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
     if (skin.species === "cat") {
         return `
             <div class="character-preview cat" style="${baseStyle}">
@@ -1226,6 +1558,133 @@ function renderCharacterPreview(skin) {
                 <div class="preview-eye right"></div>
                 <div class="preview-nose small"></div>
                 <div class="preview-tail slim"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "frog") {
+        return `
+            <div class="character-preview frog" style="${baseStyle}">
+                <div class="preview-frog-body"></div>
+                <div class="preview-frog-eye left"></div>
+                <div class="preview-frog-eye right"></div>
+                <div class="preview-frog-pupil left"></div>
+                <div class="preview-frog-pupil right"></div>
+                <div class="preview-frog-belly"></div>
+                <div class="preview-frog-mouth"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "raccoon") {
+        return `
+            <div class="character-preview raccoon" style="${baseStyle}">
+                <div class="preview-raccoon-body"></div>
+                <div class="preview-raccoon-ear left"></div>
+                <div class="preview-raccoon-ear right"></div>
+                <div class="preview-raccoon-mask"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-raccoon-tail"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "dragon") {
+        return `
+            <div class="character-preview dragon" style="${baseStyle}">
+                <div class="preview-dragon-body"></div>
+                <div class="preview-dragon-horn left"></div>
+                <div class="preview-dragon-horn right"></div>
+                <div class="preview-dragon-wing left"></div>
+                <div class="preview-dragon-wing right"></div>
+                <div class="preview-dragon-snout"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-dragon-tail"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "shark") {
+        return `
+            <div class="character-preview shark" style="${baseStyle}">
+                <div class="preview-shark-body"></div>
+                <div class="preview-shark-fin"></div>
+                <div class="preview-shark-side-fin left"></div>
+                <div class="preview-shark-side-fin right"></div>
+                <div class="preview-shark-mouth"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-shark-tail"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "owl") {
+        return `
+            <div class="character-preview owl" style="${baseStyle}">
+                <div class="preview-owl-body"></div>
+                <div class="preview-owl-ear left"></div>
+                <div class="preview-owl-ear right"></div>
+                <div class="preview-owl-eye-ring left"></div>
+                <div class="preview-owl-eye-ring right"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-beak"></div>
+                <div class="preview-wing left"></div>
+                <div class="preview-wing right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "robot") {
+        return `
+            <div class="character-preview robot" style="${baseStyle}">
+                <div class="preview-robot-body"></div>
+                <div class="preview-robot-head"></div>
+                <div class="preview-robot-eye-band"></div>
+                <div class="preview-robot-antenna"></div>
+                <div class="preview-robot-arm left"></div>
+                <div class="preview-robot-arm right"></div>
+                <div class="preview-robot-core"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "ghost") {
+        return `
+            <div class="character-preview ghost" style="${baseStyle}">
+                <div class="preview-ghost-body"></div>
+                <div class="preview-ghost-wave left"></div>
+                <div class="preview-ghost-wave center"></div>
+                <div class="preview-ghost-wave right"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-ghost-blush left"></div>
+                <div class="preview-ghost-blush right"></div>
+                <div class="character-species">${speciesLabel}</div>
+            </div>
+        `;
+    }
+
+    if (skin.species === "void") {
+        return `
+            <div class="character-preview void" style="${baseStyle}">
+                <div class="preview-void-core"></div>
+                <div class="preview-void-ear left"></div>
+                <div class="preview-void-ear right"></div>
+                <div class="preview-void-ring"></div>
+                <div class="preview-eye left"></div>
+                <div class="preview-eye right"></div>
+                <div class="preview-void-star"></div>
                 <div class="character-species">${speciesLabel}</div>
             </div>
         `;
@@ -1282,9 +1741,10 @@ function renderCharacterPreview(skin) {
 
 function renderSkinGrid(targetEl, selectedSkinId, playerKey) {
     targetEl.innerHTML = "";
+    const ownedList = getOwnedSkins(playerKey);
 
-    SHOP_DATA.skins.forEach((item) => {
-        const owned = state.ownedSkins.includes(item.id);
+    getVisibleSkins().forEach((item) => {
+        const owned = ownedList.includes(item.id);
         const selected = selectedSkinId === item.id;
         const inspectSelected = inspectSkinId === item.id;
 
@@ -1657,6 +2117,18 @@ function createPlayerMesh(skinId) {
         addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.11, 0.34, 4, 8), glowMat, 0, 0.45, -0.56, 0.2, 0, 0.5), "tail", 2.1, 0.24, "y");
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.7, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.7, 0.41);
+    } else if (skin.species === "wolf") {
+        addPart(group, new THREE.CapsuleGeometry(0.31, 0.34, 6, 10), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.2, 16, 16), accentMat, 0, 0.6, 0.36);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.13, 0.34, 4), baseMat, -0.24, 1.1, 0.02, 0, 0, -0.22), "ear", 2.1, -0.1);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.13, 0.34, 4), baseMat, 0.24, 1.1, 0.02, 0, 0, 0.22), "ear", 2.1, 0.1);
+        addPart(group, new THREE.ConeGeometry(0.07, 0.18, 4), innerMat, -0.24, 1.08, 0.08, 0, 0, -0.18);
+        addPart(group, new THREE.ConeGeometry(0.07, 0.18, 4), innerMat, 0.24, 1.08, 0.08, 0, 0, 0.18);
+        addPart(group, new THREE.ConeGeometry(0.08, 0.12, 4), bellyMat, -0.08, 0.58, 0.47, Math.PI / 2, 0, 0);
+        addPart(group, new THREE.ConeGeometry(0.08, 0.12, 4), bellyMat, 0.08, 0.58, 0.47, Math.PI / 2, 0, 0);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.12, 0.42, 4, 8), glowMat, 0, 0.46, -0.6, 0.3, 0, 0.7), "tail", 2, 0.28, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.14, 0.74, 0.42);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.14, 0.74, 0.42);
     } else if (skin.species === "cat") {
         addPart(group, new THREE.CapsuleGeometry(0.28, 0.28, 6, 10), baseMat, 0, 0.5, 0);
         addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.36, 0.31);
@@ -1667,6 +2139,82 @@ function createPlayerMesh(skinId) {
         addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.04, 0.34, 4, 8), glowMat, 0, 0.52, -0.5, 1.1, 0, 0.5), "tail", 2.4, 0.22, "y");
         leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, -0.14, 0.68, 0.41);
         rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.1, 0.04), darkMat, 0.14, 0.68, 0.41);
+    } else if (skin.species === "frog") {
+        addPart(group, new THREE.SphereGeometry(0.56, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.2, 14, 14), bellyMat, 0, 0.33, 0.32);
+        addPart(group, new THREE.SphereGeometry(0.13, 12, 12), accentMat, -0.18, 0.98, 0.2);
+        addPart(group, new THREE.SphereGeometry(0.13, 12, 12), accentMat, 0.18, 0.98, 0.2);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.04, 0.07, 0.04), darkMat, -0.18, 0.99, 0.3);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.04, 0.07, 0.04), darkMat, 0.18, 0.99, 0.3);
+        addPart(group, new THREE.BoxGeometry(0.18, 0.03, 0.04), darkMat, 0, 0.55, 0.46);
+        addPart(group, new THREE.SphereGeometry(0.08, 10, 10), glowMat, -0.3, 0.24, 0.18);
+        addPart(group, new THREE.SphereGeometry(0.08, 10, 10), glowMat, 0.3, 0.24, 0.18);
+    } else if (skin.species === "raccoon") {
+        addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.18, 16, 16), accentMat, 0, 0.54, 0.35);
+        addPart(group, new THREE.SphereGeometry(0.12, 10, 10), baseMat, -0.22, 1.0, 0.02);
+        addPart(group, new THREE.SphereGeometry(0.12, 10, 10), baseMat, 0.22, 1.0, 0.02);
+        addPart(group, new THREE.BoxGeometry(0.34, 0.18, 0.08), innerMat, 0, 0.72, 0.4);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.13, 0.72, 0.43);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.13, 0.72, 0.43);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.08, 0.4, 4, 8), glowMat, 0, 0.44, -0.58, 0.55, 0, 0.7), "tail", 2.1, 0.25, "y");
+    } else if (skin.species === "dragon") {
+        addPart(group, new THREE.CapsuleGeometry(0.3, 0.4, 6, 10), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.SphereGeometry(0.18, 14, 14), accentMat, 0, 0.58, 0.36);
+        addPart(group, new THREE.ConeGeometry(0.06, 0.18, 4), glowMat, -0.18, 1.03, 0.05, 0, 0, -0.2);
+        addPart(group, new THREE.ConeGeometry(0.06, 0.18, 4), glowMat, 0.18, 1.03, 0.05, 0, 0, 0.2);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.16, 0.28, 4), accentMat, -0.38, 0.64, 0, 0, 0.5, 0.25), "wing", 2.2, 0.18, "z");
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.16, 0.28, 4), accentMat, 0.38, 0.64, 0, 0, -0.5, -0.25), "wing", 2.2, -0.18, "z");
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.07, 0.42, 4, 8), glowMat, 0, 0.34, -0.6, 0.95, 0, 0.4), "tail", 2.4, 0.22, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.12, 0.72, 0.42);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.12, 0.72, 0.42);
+    } else if (skin.species === "shark") {
+        addPart(group, new THREE.CapsuleGeometry(0.3, 0.44, 6, 10), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.ConeGeometry(0.14, 0.26, 4), accentMat, 0, 0.95, 0.02);
+        addPart(group, new THREE.ConeGeometry(0.12, 0.22, 4), accentMat, -0.34, 0.54, 0, 0, 0, 0.8);
+        addPart(group, new THREE.ConeGeometry(0.12, 0.22, 4), accentMat, 0.34, 0.54, 0, 0, 0, -0.8);
+        addPart(group, new THREE.BoxGeometry(0.24, 0.06, 0.08), bellyMat, 0, 0.42, 0.43);
+        addAnimatedPart(addPart(group, new THREE.ConeGeometry(0.14, 0.32, 4), glowMat, 0, 0.46, -0.62, Math.PI / 2, 0, 0), "tail", 2.5, 0.2, "y");
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.07, 0.04), darkMat, -0.13, 0.7, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.07, 0.04), darkMat, 0.13, 0.7, 0.41);
+    } else if (skin.species === "owl") {
+        addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.52, 0);
+        addPart(group, new THREE.ConeGeometry(0.08, 0.12, 4), accentMat, 0, 0.62, 0.45, Math.PI / 2, 0, 0);
+        addPart(group, new THREE.ConeGeometry(0.08, 0.18, 4), baseMat, -0.18, 1.04, 0.02, 0, 0, -0.1);
+        addPart(group, new THREE.ConeGeometry(0.08, 0.18, 4), baseMat, 0.18, 1.04, 0.02, 0, 0, 0.1);
+        addPart(group, new THREE.SphereGeometry(0.15, 10, 10), accentMat, -0.14, 0.74, 0.35);
+        addPart(group, new THREE.SphereGeometry(0.15, 10, 10), accentMat, 0.14, 0.74, 0.35);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, -0.34, 0.55, 0, 0, 0, 0.35), "wing", 2.2, 0.16);
+        addAnimatedPart(addPart(group, new THREE.BoxGeometry(0.18, 0.08, 0.28), accentMat, 0.34, 0.55, 0, 0, 0, -0.35), "wing", 2.2, -0.16);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.14, 0.74, 0.44);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.14, 0.74, 0.44);
+    } else if (skin.species === "robot") {
+        addPart(group, new THREE.BoxGeometry(0.56, 0.56, 0.56), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.BoxGeometry(0.34, 0.18, 0.08), accentMat, 0, 0.74, 0.34);
+        addPart(group, new THREE.CylinderGeometry(0.03, 0.03, 0.18, 6), glowMat, 0, 1.02, 0);
+        addPart(group, new THREE.SphereGeometry(0.05, 8, 8), glowMat, 0, 1.14, 0);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.26, 0.08), accentMat, -0.36, 0.48, 0);
+        addPart(group, new THREE.BoxGeometry(0.08, 0.26, 0.08), accentMat, 0.36, 0.48, 0);
+        addPart(group, new THREE.SphereGeometry(0.09, 10, 10), glowMat, 0, 0.38, 0.34);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.08, 0.06, 0.04), darkMat, -0.1, 0.74, 0.43);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.08, 0.06, 0.04), darkMat, 0.1, 0.74, 0.43);
+    } else if (skin.species === "ghost") {
+        addPart(group, new THREE.SphereGeometry(0.46, 18, 18), baseMat, 0, 0.58, 0);
+        addPart(group, new THREE.CylinderGeometry(0.42, 0.34, 0.46, 12), baseMat, 0, 0.34, 0);
+        addPart(group, new THREE.SphereGeometry(0.08, 10, 10), bellyMat, -0.2, 0.08, 0.05);
+        addPart(group, new THREE.SphereGeometry(0.08, 10, 10), bellyMat, 0, 0.02, 0.05);
+        addPart(group, new THREE.SphereGeometry(0.08, 10, 10), bellyMat, 0.2, 0.08, 0.05);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.09, 0.04), darkMat, -0.1, 0.7, 0.42);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.09, 0.04), darkMat, 0.1, 0.7, 0.42);
+        addAnimatedPart(addPart(group, new THREE.TorusGeometry(0.28, 0.03, 8, 20), glowMat, 0, 0.92, 0, Math.PI / 2, 0, 0), "tail", 2.3, 0.2, "y");
+    } else if (skin.species === "void") {
+        addPart(group, new THREE.SphereGeometry(0.46, 18, 18), baseMat, 0, 0.5, 0);
+        addPart(group, new THREE.TorusGeometry(0.34, 0.04, 8, 28), glowMat, 0, 0.72, 0, Math.PI / 2, 0, 0);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.05, 0.34, 4, 8), accentMat, -0.18, 1.06, 0.02, 0, 0, -0.12), "ear", 2.8, -0.12);
+        addAnimatedPart(addPart(group, new THREE.CapsuleGeometry(0.05, 0.34, 4, 8), accentMat, 0.18, 1.06, 0.02, 0, 0, 0.12), "ear", 2.8, 0.12);
+        addPart(group, new THREE.OctahedronGeometry(0.11), glowMat, 0, 0.28, 0.42);
+        leftEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, -0.12, 0.58, 0.41);
+        rightEye = addPart(group, new THREE.BoxGeometry(0.05, 0.08, 0.04), darkMat, 0.12, 0.58, 0.41);
     } else if (skin.species === "panda") {
         addPart(group, new THREE.SphereGeometry(0.5, 18, 18), baseMat, 0, 0.5, 0);
         addPart(group, new THREE.SphereGeometry(0.2, 16, 16), bellyMat, 0, 0.35, 0.31);
@@ -2167,6 +2715,7 @@ function startGame() {
     state.theme = setup.theme;
     state.players = createPlayers();
     state.runTime = 0;
+    state.reviveUsed = false;
     state.collectedThisRun = 0;
     state.stats.runs += 1;
     unlockAchievement("first_run");
@@ -2224,6 +2773,10 @@ function startGame() {
     addAmbientWorld();
 
     state.players.forEach((player) => {
+        if (state.gameType === "levels" && state.currentLevel <= 2) {
+            player.shieldTimer = 8;
+            player.shieldHits = 1;
+        }
         const mesh = createPlayerMesh(player.skinId);
         mesh.position.set(player.currentLaneX, 0.45, 0);
         playerMeshes.push(mesh);
@@ -2256,6 +2809,7 @@ function returnToMenu() {
     elPowerupStatus.classList.add("hidden");
     elComboDisplay.classList.add("hidden");
     clearAmbientWorld();
+    elReviveBtn.classList.add("hidden");
 
     renderLevelSelect();
     updateHUD();
@@ -2347,7 +2901,7 @@ function updatePlayers(dtScale) {
     state.players.forEach((player, index) => {
         if (!player.alive) return;
 
-        player.score += state.speed * dtScale;
+        player.score += state.speed * dtScale * (state.feverTimer > 0 ? 1.15 : 1);
         player.flyTimer = Math.max(0, player.flyTimer - dtSeconds);
         player.jumpBoostTimer = Math.max(0, player.jumpBoostTimer - dtSeconds);
         player.magnetTimer = Math.max(0, player.magnetTimer - dtSeconds);
@@ -2388,13 +2942,25 @@ function updatePlayers(dtScale) {
         mesh.rotation.z = (player.currentLaneX - prevX) * -0.7;
 
         if (mesh.userData.animatedParts) {
-            updateMeshPresentation(mesh, now, 1, { highlightColor: getPowerColor(player) });
+            updateMeshPresentation(mesh, now, state.feverTimer > 0 ? 1.45 : 1, {
+                highlightColor: state.feverTimer > 0
+                    ? (Math.sin(now * 3 + index) > 0 ? 0xff7fd6 : 0x7cecff)
+                    : getPowerColor(player)
+            });
         }
 
-        const trailColor = getPowerColor(player);
-        const trailChance = player.flyTimer > 0 ? 0.42 : 0.18;
+        const trailColor = state.feverTimer > 0
+            ? (Math.sin(now * 4 + index) > 0 ? 0xff9fef : 0x7cecff)
+            : getPowerColor(player);
+        const trailChance = state.feverTimer > 0 ? 0.52 : player.flyTimer > 0 ? 0.42 : 0.18;
         if (Math.random() < trailChance) {
-            spawnTrail(mesh.position.x, mesh.position.y, mesh.position.z, trailColor, player.flyTimer > 0 ? 0.11 : 0.08);
+            spawnTrail(
+                mesh.position.x,
+                mesh.position.y,
+                mesh.position.z,
+                trailColor,
+                state.feverTimer > 0 ? 0.12 : player.flyTimer > 0 ? 0.11 : 0.08
+            );
         }
     });
 
@@ -2627,6 +3193,7 @@ function finishGame(completed) {
     elPowerupStatus.classList.add("hidden");
     elComboDisplay.classList.add("hidden");
     elNextLevelBtn.classList.toggle("hidden", !(completed && state.gameType === "levels" && state.currentLevel < state.unlockedLevel));
+    elReviveBtn.classList.toggle("hidden", completed || !canReviveNow());
 
     const versusWinner = state.mode === "2p"
         ? (() => {
@@ -2661,6 +3228,7 @@ function finishGame(completed) {
             <div class="reward-line">Coins earned • ${state.collectedThisRun}</div>
             <div class="reward-line">Best ${state.difficulty.toUpperCase()} • ${Math.floor(state.endlessBest[state.difficulty])}</div>
             <div class="reward-line">Run time • ${Math.floor(state.runTime)}s</div>
+            ${!completed && canReviveNow() ? `<div class="reward-line">One revive available • 75 coins</div>` : ""}
         `;
         renderMetaPanels();
         saveProgress();
@@ -2697,6 +3265,7 @@ function finishGame(completed) {
             <div class="reward-line">Best level score • ${Math.floor(state.levelRecords[state.currentLevel] || 0)}</div>
             <div class="reward-line">Current streak reset</div>
             <div class="reward-line">Run time • ${Math.floor(state.runTime)}s</div>
+            ${canReviveNow() ? `<div class="reward-line">One revive available • 75 coins</div>` : ""}
         `;
         playTone(180, 0.15, "sawtooth", 0.05);
     }
@@ -2721,9 +3290,18 @@ function animate(now = performance.now()) {
 
     if (state.comboTimer > 0) {
         state.comboTimer = Math.max(0, state.comboTimer - dtSeconds);
-        if (state.comboTimer <= 0) {
+        if (state.comboTimer <= 0 && state.feverTimer <= 0) {
             resetCombo();
         } else {
+            updateComboDisplay();
+        }
+    } else if (state.feverTimer <= 0 && state.comboCount > 0) {
+        resetCombo();
+    }
+
+    if (state.feverTimer > 0) {
+        state.feverTimer = Math.max(0, state.feverTimer - dtSeconds);
+        if (state.feverTimer <= 0) {
             updateComboDisplay();
         }
     }
@@ -2752,4 +3330,4 @@ function animate(now = performance.now()) {
     renderer.render(scene, camera);
 }
 
-init();
+init()

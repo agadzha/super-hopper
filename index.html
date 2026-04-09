@@ -112,36 +112,9 @@
                 </div>
             </div>
 
-            <div class="meta-grid">
-                <div class="meta-card">
-                    <div class="meta-title">DAILY REWARD</div>
-                    <div id="daily-status" class="meta-copy">Ready to claim</div>
-                    <button id="claim-daily-btn" class="meta-btn">CLAIM</button>
-                </div>
-
-                <div class="meta-card">
-                    <div class="meta-title">MISSIONS</div>
-                    <div id="missions-list" class="meta-list"></div>
-                </div>
-
-                <div class="meta-card">
-                    <div class="meta-title">ACHIEVEMENTS</div>
-                    <div id="achievements-list" class="meta-list compact"></div>
-                </div>
-
-                <div class="meta-card">
-                    <div class="meta-title">STATS</div>
-                    <div id="stats-list" class="meta-list compact"></div>
-                </div>
-
-                <div class="meta-card">
-                    <div class="meta-title">RECORDS</div>
-                    <div id="records-list" class="meta-list compact"></div>
-                </div>
-            </div>
-
             <div class="button-row menu-actions">
                 <button id="open-shop-from-menu" class="main-btn">SHOP</button>
+                <button id="open-progress-btn" class="main-btn">PROGRESS</button>
                 <button id="start-btn" class="main-btn">PRESS START</button>
             </div>
         </div>
@@ -152,6 +125,7 @@
             <div id="reward-summary" class="reward-summary"></div>
             <div class="button-row menu-actions">
                 <button id="next-level-btn" class="main-btn hidden">NEXT LEVEL</button>
+                <button id="revive-btn" class="main-btn hidden">REVIVE 75</button>
                 <button id="restart-btn" class="main-btn">TRY AGAIN</button>
                 <button id="menu-btn" class="main-btn">MENU</button>
             </div>
@@ -202,6 +176,49 @@
                 <div class="shop-section">
                     <div class="shop-title">BOOSTS IN RUN</div>
                     <div id="powerup-info" class="shop-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="progress-panel" class="hidden">
+            <div class="shop-card progress-card">
+                <div class="shop-header">
+                    <span>PROGRESS</span>
+                    <button id="close-progress-btn" class="shop-close-btn">X</button>
+                </div>
+
+                <div class="meta-grid">
+                    <div class="meta-card">
+                        <div class="meta-title">DAILY REWARD</div>
+                        <div id="daily-status" class="meta-copy">Ready to claim</div>
+                        <button id="claim-daily-btn" class="meta-btn">CLAIM</button>
+                    </div>
+
+                    <div class="meta-card">
+                        <div class="meta-title">LUCKY SPIN</div>
+                        <div id="spin-status" class="meta-copy">Ready to spin</div>
+                        <button id="spin-btn" class="meta-btn">SPIN</button>
+                    </div>
+
+                    <div class="meta-card">
+                        <div class="meta-title">MISSIONS</div>
+                        <div id="missions-list" class="meta-list"></div>
+                    </div>
+
+                    <div class="meta-card">
+                        <div class="meta-title">ACHIEVEMENTS</div>
+                        <div id="achievements-list" class="meta-list compact"></div>
+                    </div>
+
+                    <div class="meta-card">
+                        <div class="meta-title">STATS</div>
+                        <div id="stats-list" class="meta-list compact"></div>
+                    </div>
+
+                    <div class="meta-card">
+                        <div class="meta-title">RECORDS</div>
+                        <div id="records-list" class="meta-list compact"></div>
+                    </div>
                 </div>
             </div>
         </div>

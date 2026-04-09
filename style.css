@@ -134,7 +134,7 @@ button:disabled {
 
 .meta-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-top: 1rem;
     text-align: left;
@@ -473,6 +473,17 @@ button:disabled {
     pointer-events: auto;
 }
 
+#progress-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 41;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+}
+
 .shop-card {
     width: min(92vw, 820px);
     max-height: 82vh;
@@ -482,6 +493,10 @@ button:disabled {
     background: rgba(20, 16, 20, 0.94);
     border: 1px solid rgba(255, 255, 255, 0.14);
     color: #fff;
+}
+
+.progress-card {
+    width: min(94vw, 980px);
 }
 
 .shop-header {
@@ -927,8 +942,47 @@ button:disabled {
 .preview-fox-body,
 .preview-fox-ear,
 .preview-fox-muzzle,
+.preview-wolf-body,
+.preview-wolf-ear,
+.preview-wolf-muzzle,
+.preview-wolf-fang,
 .preview-cat-body,
 .preview-cat-ear,
+.preview-frog-body,
+.preview-frog-eye,
+.preview-frog-pupil,
+.preview-frog-belly,
+.preview-frog-mouth,
+.preview-raccoon-body,
+.preview-raccoon-ear,
+.preview-raccoon-mask,
+.preview-raccoon-tail,
+.preview-dragon-body,
+.preview-dragon-horn,
+.preview-dragon-wing,
+.preview-dragon-snout,
+.preview-dragon-tail,
+.preview-shark-body,
+.preview-shark-fin,
+.preview-shark-side-fin,
+.preview-shark-mouth,
+.preview-shark-tail,
+.preview-owl-body,
+.preview-owl-ear,
+.preview-owl-eye-ring,
+.preview-robot-body,
+.preview-robot-head,
+.preview-robot-eye-band,
+.preview-robot-antenna,
+.preview-robot-arm,
+.preview-robot-core,
+.preview-ghost-body,
+.preview-ghost-wave,
+.preview-ghost-blush,
+.preview-void-core,
+.preview-void-ear,
+.preview-void-ring,
+.preview-void-star,
 .preview-panda-body,
 .preview-panda-ear,
 .preview-panda-patch,
@@ -1127,6 +1181,7 @@ button:disabled {
 }
 
 .character-preview.fox .preview-fox-body,
+.character-preview.wolf .preview-wolf-body,
 .character-preview.cat .preview-cat-body,
 .character-preview.bear .preview-bear-body,
 .character-preview.panda .preview-panda-body {
@@ -1142,7 +1197,18 @@ button:disabled {
     border-radius: 16px;
 }
 
+.character-preview.wolf .preview-wolf-body {
+    left: 50%;
+    bottom: 10px;
+    width: 54px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 16px 16px 20px 20px;
+}
+
 .character-preview.fox .preview-fox-ear,
+.character-preview.wolf .preview-wolf-ear,
 .character-preview.cat .preview-cat-ear {
     top: 8px;
     width: 13px;
@@ -1152,13 +1218,50 @@ button:disabled {
 }
 
 .character-preview.fox .preview-fox-ear.left,
+.character-preview.wolf .preview-wolf-ear.left,
 .character-preview.cat .preview-cat-ear.left {
     left: 18px;
 }
 
 .character-preview.fox .preview-fox-ear.right,
+.character-preview.wolf .preview-wolf-ear.right,
 .character-preview.cat .preview-cat-ear.right {
     right: 18px;
+}
+
+.character-preview.wolf .preview-wolf-ear {
+    width: 14px;
+    height: 22px;
+}
+
+.character-preview.wolf .preview-wolf-muzzle {
+    left: 50%;
+    bottom: 22px;
+    width: 24px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.wolf .preview-wolf-fang {
+    bottom: 20px;
+    width: 4px;
+    height: 8px;
+    background: #fff;
+    border-radius: 0 0 4px 4px;
+}
+
+.character-preview.wolf .preview-wolf-fang.left {
+    left: 28px;
+}
+
+.character-preview.wolf .preview-wolf-fang.right {
+    right: 28px;
+}
+
+.character-preview.wolf .preview-eye {
+    bottom: 34px;
 }
 
 .character-preview.fox .preview-fox-muzzle,
@@ -1214,6 +1317,483 @@ button:disabled {
     transform: translateX(-50%);
     background: var(--skin-accent);
     border-radius: 999px;
+}
+
+.character-preview.frog .preview-frog-body {
+    left: 50%;
+    bottom: 10px;
+    width: 54px;
+    height: 38px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 24px;
+}
+
+.character-preview.frog .preview-frog-eye {
+    top: 10px;
+    width: 16px;
+    height: 16px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.frog .preview-frog-eye.left {
+    left: 16px;
+}
+
+.character-preview.frog .preview-frog-eye.right {
+    right: 16px;
+}
+
+.character-preview.frog .preview-frog-pupil {
+    top: 15px;
+    width: 6px;
+    height: 8px;
+    background: #111;
+    border-radius: 999px;
+}
+
+.character-preview.frog .preview-frog-pupil.left {
+    left: 21px;
+}
+
+.character-preview.frog .preview-frog-pupil.right {
+    right: 21px;
+}
+
+.character-preview.frog .preview-frog-belly {
+    left: 50%;
+    bottom: 12px;
+    width: 26px;
+    height: 18px;
+    transform: translateX(-50%);
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.frog .preview-frog-mouth {
+    left: 50%;
+    bottom: 20px;
+    width: 20px;
+    height: 4px;
+    transform: translateX(-50%);
+    background: rgba(17, 17, 17, 0.75);
+    border-radius: 999px;
+}
+
+.character-preview.raccoon .preview-raccoon-body {
+    left: 50%;
+    bottom: 10px;
+    width: 52px;
+    height: 38px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 18px;
+}
+
+.character-preview.raccoon .preview-raccoon-ear {
+    top: 10px;
+    width: 12px;
+    height: 14px;
+    background: var(--skin-base);
+    border-radius: 999px;
+}
+
+.character-preview.raccoon .preview-raccoon-ear.left {
+    left: 18px;
+}
+
+.character-preview.raccoon .preview-raccoon-ear.right {
+    right: 18px;
+}
+
+.character-preview.raccoon .preview-raccoon-mask {
+    left: 50%;
+    bottom: 26px;
+    width: 34px;
+    height: 16px;
+    transform: translateX(-50%);
+    background: var(--skin-inner);
+    border-radius: 12px;
+}
+
+.character-preview.raccoon .preview-eye {
+    bottom: 31px;
+}
+
+.character-preview.raccoon .preview-raccoon-tail {
+    right: 6px;
+    bottom: 12px;
+    width: 14px;
+    height: 30px;
+    background: repeating-linear-gradient(180deg, var(--skin-glow) 0 6px, var(--skin-accent) 6px 12px);
+    border-radius: 999px;
+    transform: rotate(28deg);
+}
+
+.character-preview.dragon .preview-dragon-body {
+    left: 50%;
+    bottom: 10px;
+    width: 52px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 18px 18px 22px 22px;
+}
+
+.character-preview.dragon .preview-dragon-horn {
+    top: 8px;
+    width: 10px;
+    height: 18px;
+    background: var(--skin-glow);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.character-preview.dragon .preview-dragon-horn.left {
+    left: 18px;
+}
+
+.character-preview.dragon .preview-dragon-horn.right {
+    right: 18px;
+}
+
+.character-preview.dragon .preview-dragon-wing {
+    bottom: 22px;
+    width: 16px;
+    height: 24px;
+    background: var(--skin-accent);
+    clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+
+.character-preview.dragon .preview-dragon-wing.left {
+    left: 10px;
+    transform: rotate(-18deg);
+}
+
+.character-preview.dragon .preview-dragon-wing.right {
+    right: 10px;
+    transform: scaleX(-1) rotate(-18deg);
+}
+
+.character-preview.dragon .preview-dragon-snout {
+    left: 50%;
+    bottom: 20px;
+    width: 20px;
+    height: 12px;
+    transform: translateX(-50%);
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.dragon .preview-eye {
+    bottom: 33px;
+}
+
+.character-preview.dragon .preview-dragon-tail {
+    right: 4px;
+    bottom: 10px;
+    width: 10px;
+    height: 28px;
+    background: var(--skin-glow);
+    border-radius: 999px;
+    transform: rotate(28deg);
+}
+
+.character-preview.shark .preview-shark-body {
+    left: 50%;
+    bottom: 10px;
+    width: 56px;
+    height: 34px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 18px;
+}
+
+.character-preview.shark .preview-shark-fin {
+    left: 50%;
+    top: 8px;
+    width: 18px;
+    height: 20px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.character-preview.shark .preview-shark-side-fin {
+    bottom: 18px;
+    width: 14px;
+    height: 18px;
+    background: var(--skin-accent);
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.character-preview.shark .preview-shark-side-fin.left {
+    left: 10px;
+}
+
+.character-preview.shark .preview-shark-side-fin.right {
+    right: 10px;
+    transform: scaleX(-1);
+}
+
+.character-preview.shark .preview-shark-mouth {
+    left: 50%;
+    bottom: 16px;
+    width: 22px;
+    height: 6px;
+    transform: translateX(-50%);
+    background: #fff;
+    clip-path: polygon(0 0, 8% 100%, 16% 0, 24% 100%, 32% 0, 40% 100%, 48% 0, 56% 100%, 64% 0, 72% 100%, 80% 0, 88% 100%, 100% 0);
+}
+
+.character-preview.shark .preview-eye {
+    bottom: 28px;
+}
+
+.character-preview.shark .preview-shark-tail {
+    right: 2px;
+    bottom: 10px;
+    width: 18px;
+    height: 24px;
+    background: var(--skin-glow);
+    clip-path: polygon(0 50%, 100% 0, 100% 38%, 40% 50%, 100% 62%, 100% 100%);
+}
+
+.character-preview.owl .preview-owl-body {
+    left: 50%;
+    bottom: 10px;
+    width: 48px;
+    height: 42px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 18px 18px 20px 20px;
+}
+
+.character-preview.owl .preview-owl-ear {
+    top: 10px;
+    width: 10px;
+    height: 16px;
+    background: var(--skin-base);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.character-preview.owl .preview-owl-ear.left {
+    left: 18px;
+}
+
+.character-preview.owl .preview-owl-ear.right {
+    right: 18px;
+}
+
+.character-preview.owl .preview-owl-eye-ring {
+    bottom: 28px;
+    width: 16px;
+    height: 16px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.owl .preview-owl-eye-ring.left {
+    left: 18px;
+}
+
+.character-preview.owl .preview-owl-eye-ring.right {
+    right: 18px;
+}
+
+.character-preview.owl .preview-eye {
+    bottom: 32px;
+}
+
+.character-preview.owl .preview-wing.left {
+    left: 10px;
+}
+
+.character-preview.owl .preview-wing.right {
+    right: 10px;
+}
+
+.character-preview.robot .preview-robot-body {
+    left: 50%;
+    bottom: 10px;
+    width: 50px;
+    height: 38px;
+    transform: translateX(-50%);
+    background: var(--skin-base);
+    border-radius: 10px;
+}
+
+.character-preview.robot .preview-robot-head {
+    left: 50%;
+    bottom: 34px;
+    width: 36px;
+    height: 24px;
+    transform: translateX(-50%);
+    background: var(--skin-accent);
+    border-radius: 8px;
+}
+
+.character-preview.robot .preview-robot-eye-band {
+    left: 50%;
+    bottom: 41px;
+    width: 24px;
+    height: 6px;
+    transform: translateX(-50%);
+    background: #111;
+    border-radius: 999px;
+}
+
+.character-preview.robot .preview-robot-antenna {
+    left: 50%;
+    top: 8px;
+    width: 4px;
+    height: 18px;
+    transform: translateX(-50%);
+    background: var(--skin-glow);
+}
+
+.character-preview.robot .preview-robot-antenna::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -6px;
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%);
+    background: var(--skin-glow);
+    border-radius: 999px;
+}
+
+.character-preview.robot .preview-robot-arm {
+    bottom: 16px;
+    width: 8px;
+    height: 24px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.robot .preview-robot-arm.left {
+    left: 10px;
+}
+
+.character-preview.robot .preview-robot-arm.right {
+    right: 10px;
+}
+
+.character-preview.robot .preview-robot-core {
+    left: 50%;
+    bottom: 18px;
+    width: 12px;
+    height: 12px;
+    transform: translateX(-50%);
+    background: var(--skin-glow);
+    border-radius: 999px;
+    box-shadow: 0 0 12px var(--skin-glow);
+}
+
+.character-preview.ghost .preview-ghost-body {
+    left: 50%;
+    bottom: 12px;
+    width: 48px;
+    height: 42px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--skin-accent), var(--skin-base));
+    border-radius: 999px 999px 14px 14px;
+}
+
+.character-preview.ghost .preview-eye {
+    bottom: 32px;
+}
+
+.character-preview.ghost .preview-ghost-wave {
+    bottom: 8px;
+    width: 14px;
+    height: 14px;
+    background: var(--skin-belly);
+    border-radius: 999px;
+}
+
+.character-preview.ghost .preview-ghost-wave.left {
+    left: 14px;
+}
+
+.character-preview.ghost .preview-ghost-wave.center {
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.character-preview.ghost .preview-ghost-wave.right {
+    right: 14px;
+}
+
+.character-preview.ghost .preview-ghost-blush {
+    bottom: 22px;
+    width: 8px;
+    height: 5px;
+    background: var(--skin-inner);
+    border-radius: 999px;
+    opacity: 0.8;
+}
+
+.character-preview.ghost .preview-ghost-blush.left {
+    left: 16px;
+}
+
+.character-preview.ghost .preview-ghost-blush.right {
+    right: 16px;
+}
+
+.character-preview.void .preview-void-core {
+    left: 50%;
+    bottom: 12px;
+    width: 46px;
+    height: 40px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 35%, var(--skin-accent), var(--skin-base) 72%);
+    border-radius: 999px;
+}
+
+.character-preview.void .preview-void-ear {
+    top: 6px;
+    width: 10px;
+    height: 24px;
+    background: var(--skin-accent);
+    border-radius: 999px;
+}
+
+.character-preview.void .preview-void-ear.left {
+    left: 18px;
+    transform: rotate(-8deg);
+}
+
+.character-preview.void .preview-void-ear.right {
+    right: 18px;
+    transform: rotate(8deg);
+}
+
+.character-preview.void .preview-void-ring {
+    left: 50%;
+    bottom: 24px;
+    width: 58px;
+    height: 18px;
+    transform: translateX(-50%);
+    border: 3px solid var(--skin-glow);
+    border-radius: 999px;
+    box-shadow: 0 0 14px var(--skin-glow);
+}
+
+.character-preview.void .preview-eye {
+    bottom: 34px;
+}
+
+.character-preview.void .preview-void-star {
+    left: 50%;
+    bottom: 18px;
+    width: 14px;
+    height: 14px;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--skin-glow);
+    box-shadow: 0 0 12px var(--skin-glow);
 }
 
 .character-preview.panda .preview-panda-body {
@@ -1362,6 +1942,10 @@ button:disabled {
 }
 
 @media (max-width: 900px), (pointer: coarse) {
+    .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .level-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -1430,10 +2014,6 @@ button:disabled {
         padding: 1.2rem 0.9rem;
     }
 
-    .meta-grid {
-        grid-template-columns: 1fr;
-    }
-
     .inspect-viewer {
         grid-template-columns: 1fr;
     }
@@ -1458,5 +2038,11 @@ button:disabled {
 
     #mobile-swipe-hint {
         display: block;
+    }
+}
+
+@media (max-width: 640px) {
+    .meta-grid {
+        grid-template-columns: 1fr;
     }
 }
